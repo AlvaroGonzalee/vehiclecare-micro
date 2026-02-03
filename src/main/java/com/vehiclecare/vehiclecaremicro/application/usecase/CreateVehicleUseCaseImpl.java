@@ -4,20 +4,16 @@ import com.vehiclecare.vehiclecaremicro.domain.model.Vehicle;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.CreateVehicleUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.UserRepositoryPort;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.VehicleRepositoryPort;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class CreateVehicleUseCaseImpl implements CreateVehicleUseCase {
 
     private final VehicleRepositoryPort vehicleRepositoryPort;
     private final UserRepositoryPort userRepositoryPort;
-
-    public CreateVehicleUseCaseImpl(VehicleRepositoryPort vehicleRepositoryPort,
-                                    UserRepositoryPort userRepositoryPort) {
-        this.vehicleRepositoryPort = vehicleRepositoryPort;
-        this.userRepositoryPort = userRepositoryPort;
-    }
 
     @Override
     @Transactional

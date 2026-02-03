@@ -5,6 +5,7 @@ import com.vehiclecare.vehiclecaremicro.domain.port.out.UserRepositoryPort;
 import com.vehiclecare.vehiclecaremicro.infrastructure.mapper.UserMapper;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.entity.UserEntity;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.repository.UserJpaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,17 +14,12 @@ import jakarta.persistence.EntityManager;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class UserPersistenceAdapter implements UserRepositoryPort {
 
     private final UserJpaRepository userJpaRepository;
     private final UserMapper userMapper;
     private final EntityManager entityManager;
-
-    public UserPersistenceAdapter(UserJpaRepository userJpaRepository, UserMapper userMapper, EntityManager entityManager) {
-        this.userJpaRepository = userJpaRepository;
-        this.userMapper = userMapper;
-        this.entityManager = entityManager;
-    }
 
     @Override
     @Transactional

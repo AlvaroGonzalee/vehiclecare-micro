@@ -5,6 +5,7 @@ import com.vehiclecare.vehiclecaremicro.application.dto.response.MaintenanceReco
 import com.vehiclecare.vehiclecaremicro.domain.model.MaintenanceRecord;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.AddMaintenanceRecordUseCase;
 import com.vehiclecare.vehiclecaremicro.infrastructure.mapper.MaintenanceRecordMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,16 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/maintenance-records")
+@RequiredArgsConstructor
 public class MaintenanceRecordController {
 
     private final AddMaintenanceRecordUseCase addMaintenanceRecordUseCase;
     private final MaintenanceRecordMapper maintenanceRecordMapper;
-
-    public MaintenanceRecordController(AddMaintenanceRecordUseCase addMaintenanceRecordUseCase,
-                                       MaintenanceRecordMapper maintenanceRecordMapper) {
-        this.addMaintenanceRecordUseCase = addMaintenanceRecordUseCase;
-        this.maintenanceRecordMapper = maintenanceRecordMapper;
-    }
 
     @PostMapping
     public ResponseEntity<MaintenanceRecordResponseDTO> addMaintenance(@RequestBody MaintenanceRecordRequestDTO requestDTO) {

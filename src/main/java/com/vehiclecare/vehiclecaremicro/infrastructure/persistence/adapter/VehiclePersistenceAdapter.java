@@ -5,21 +5,18 @@ import com.vehiclecare.vehiclecaremicro.domain.port.out.VehicleRepositoryPort;
 import com.vehiclecare.vehiclecaremicro.infrastructure.mapper.VehicleMapper;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.entity.VehicleEntity;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.repository.VehicleJpaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class VehiclePersistenceAdapter implements VehicleRepositoryPort {
 
     private final VehicleJpaRepository vehicleJpaRepository;
     private final VehicleMapper vehicleMapper;
-
-    public VehiclePersistenceAdapter(VehicleJpaRepository vehicleJpaRepository, VehicleMapper vehicleMapper) {
-        this.vehicleJpaRepository = vehicleJpaRepository;
-        this.vehicleMapper = vehicleMapper;
-    }
 
     @Override
     public Vehicle save(Vehicle vehicle) {
