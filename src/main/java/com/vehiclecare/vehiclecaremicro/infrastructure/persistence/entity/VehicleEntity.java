@@ -36,8 +36,8 @@ public class VehicleEntity {
     @Column(nullable = false)
     private String model;
 
-    @Column(nullable = false)
-    private Integer year;
+    @Column(name = "vehicle_year", nullable = false)
+    private Integer vehicleYear;
 
     @Column(name = "license_plate", nullable = false, unique = true)
     private String licensePlate;

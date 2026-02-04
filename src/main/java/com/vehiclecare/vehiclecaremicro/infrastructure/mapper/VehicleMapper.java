@@ -12,9 +12,11 @@ import org.mapstruct.Mapping;
 public interface VehicleMapper {
 
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "year", source = "vehicleYear")
     Vehicle toDomain(VehicleEntity entity);
 
     @Mapping(target = "user", source = "userId", qualifiedByName = "userRef")
+    @Mapping(target = "vehicleYear", source = "year")
     VehicleEntity toEntity(Vehicle vehicle);
 
     Vehicle toDomain(VehicleRequestDTO requestDTO);

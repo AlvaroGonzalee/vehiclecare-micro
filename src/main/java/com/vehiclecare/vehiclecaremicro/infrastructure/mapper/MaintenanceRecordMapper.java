@@ -11,9 +11,11 @@ import org.mapstruct.Mapping;
 public interface MaintenanceRecordMapper {
 
     @Mapping(target = "vehicleId", source = "vehicle.id")
+    @Mapping(target = "date", source = "maintenanceDate")
     MaintenanceRecord toDomain(MaintenanceRecordEntity entity);
 
     @Mapping(target = "vehicle", source = "vehicleId", qualifiedByName = "vehicleRef")
+    @Mapping(target = "maintenanceDate", source = "date")
     MaintenanceRecordEntity toEntity(MaintenanceRecord maintenanceRecord);
 
     MaintenanceRecord toDomain(MaintenanceRecordRequestDTO requestDTO);

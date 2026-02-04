@@ -40,8 +40,8 @@ public class MaintenanceRecordEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
-    private LocalDate date;
+    @Column(name = "maintenance_date", nullable = false)
+    private LocalDate maintenanceDate;
 
     @Column(nullable = false)
     private String category;
