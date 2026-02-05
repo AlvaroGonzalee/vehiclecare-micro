@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -30,5 +31,16 @@ public class MaintenancePersistenceAdapter implements MaintenanceRepositoryPort 
                 .stream()
                 .map(maintenanceRecordMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Optional<MaintenanceRecord> findById(String id) {
+        return maintenanceRecordJpaRepository.findById(id)
+                .map(maintenanceRecordMapper::toDomain);
+    }
+
+    @Override
+    public void deleteById(String id) {
+        maintenanceRecordJpaRepository.deleteById(id);
     }
 }
