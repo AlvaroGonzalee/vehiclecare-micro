@@ -37,4 +37,9 @@ public class VehiclePersistenceAdapter implements VehicleRepositoryPort {
                 .map(vehicleMapper::toDomain)
                 .toList();
     }
+
+    @Override
+    public void deleteById(String id) {
+        vehicleJpaRepository.deleteById(id);
+    }
 }

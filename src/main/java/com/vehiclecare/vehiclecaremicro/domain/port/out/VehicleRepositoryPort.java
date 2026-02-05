@@ -9,4 +9,5 @@ public interface VehicleRepositoryPort {
     Vehicle save(Vehicle vehicle);
     Optional<Vehicle> findById(String id);
     List<Vehicle> findByUserId(String userId);
+    void deleteById(String id);
 }
