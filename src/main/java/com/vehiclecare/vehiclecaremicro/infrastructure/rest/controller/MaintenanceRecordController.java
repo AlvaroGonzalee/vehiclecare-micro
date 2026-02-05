@@ -1,6 +1,7 @@
 package com.vehiclecare.vehiclecaremicro.infrastructure.rest.controller;
 
-import com.vehiclecare.vehiclecaremicro.application.dto.request.MaintenanceRecordRequestDTO;
+import com.vehiclecare.vehiclecaremicro.application.dto.request.MaintenanceRecordCreateRequestDTO;
+import com.vehiclecare.vehiclecaremicro.application.dto.request.MaintenanceRecordUpdateRequestDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.MaintenanceRecordResponseDTO;
 import com.vehiclecare.vehiclecaremicro.domain.model.MaintenanceRecord;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.AddMaintenanceRecordUseCase;
@@ -20,12 +21,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
+@Validated
 public class MaintenanceRecordController {
 
     private final AddMaintenanceRecordUseCase addMaintenanceRecordUseCase;
@@ -57,7 +61,7 @@ public class MaintenanceRecordController {
     @PostMapping("/vehicles/{vehicleId}/records")
     public ResponseEntity<MaintenanceRecordResponseDTO> addMaintenance(
             @PathVariable("vehicleId") String vehicleId,
-            @RequestBody MaintenanceRecordRequestDTO requestDTO
+            @Valid @RequestBody MaintenanceRecordCreateRequestDTO requestDTO
     ) {
         MaintenanceRecord maintenance = maintenanceRecordMapper.toDomain(requestDTO);
         MaintenanceRecord created = addMaintenanceRecordUseCase.addMaintenanceRecord(vehicleId, maintenance);
@@ -67,7 +71,7 @@ public class MaintenanceRecordController {
     @PutMapping("/records/{id}")
     public ResponseEntity<MaintenanceRecordResponseDTO> updateRecord(
             @PathVariable("id") String id,
-            @RequestBody MaintenanceRecordRequestDTO requestDTO
+            @Valid @RequestBody MaintenanceRecordUpdateRequestDTO requestDTO
     ) {
         MaintenanceRecord maintenance = maintenanceRecordMapper.toDomain(requestDTO);
         MaintenanceRecord updated = updateMaintenanceRecordUseCase.update(id, maintenance);

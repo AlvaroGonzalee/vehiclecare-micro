@@ -1,6 +1,7 @@
 package com.vehiclecare.vehiclecaremicro.infrastructure.mapper;
 
-import com.vehiclecare.vehiclecaremicro.application.dto.request.MaintenanceRecordRequestDTO;
+import com.vehiclecare.vehiclecaremicro.application.dto.request.MaintenanceRecordCreateRequestDTO;
+import com.vehiclecare.vehiclecaremicro.application.dto.request.MaintenanceRecordUpdateRequestDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.MaintenanceRecordResponseDTO;
 import com.vehiclecare.vehiclecaremicro.domain.model.MaintenanceRecord;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.entity.MaintenanceRecordEntity;
@@ -18,7 +19,9 @@ public interface MaintenanceRecordMapper {
     @Mapping(target = "maintenanceDate", source = "date")
     MaintenanceRecordEntity toEntity(MaintenanceRecord maintenanceRecord);
 
-    MaintenanceRecord toDomain(MaintenanceRecordRequestDTO requestDTO);
+    MaintenanceRecord toDomain(MaintenanceRecordCreateRequestDTO requestDTO);
+
+    MaintenanceRecord toDomain(MaintenanceRecordUpdateRequestDTO requestDTO);
 
     MaintenanceRecordResponseDTO toResponse(MaintenanceRecord maintenanceRecord);
 }

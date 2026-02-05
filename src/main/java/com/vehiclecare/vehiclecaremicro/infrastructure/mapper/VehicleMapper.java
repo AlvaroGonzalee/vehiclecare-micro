@@ -1,6 +1,7 @@
 package com.vehiclecare.vehiclecaremicro.infrastructure.mapper;
 
-import com.vehiclecare.vehiclecaremicro.application.dto.request.VehicleRequestDTO;
+import com.vehiclecare.vehiclecaremicro.application.dto.request.VehicleCreateRequestDTO;
+import com.vehiclecare.vehiclecaremicro.application.dto.request.VehicleUpdateRequestDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.VehicleResponseDTO;
 import com.vehiclecare.vehiclecaremicro.domain.model.Vehicle;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.entity.VehicleEntity;
@@ -19,7 +20,9 @@ public interface VehicleMapper {
     @Mapping(target = "vehicleYear", source = "year")
     VehicleEntity toEntity(Vehicle vehicle);
 
-    Vehicle toDomain(VehicleRequestDTO requestDTO);
+    Vehicle toDomain(VehicleCreateRequestDTO requestDTO);
+
+    Vehicle toDomain(VehicleUpdateRequestDTO requestDTO);
 
     VehicleResponseDTO toResponse(Vehicle vehicle);
 }

@@ -6,6 +6,7 @@ import com.vehiclecare.vehiclecaremicro.domain.model.User;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.CreateUserUseCase;
 import com.vehiclecare.vehiclecaremicro.infrastructure.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +23,7 @@ public class UserController {
     private final UserMapper userMapper;
 
     @PostMapping
-    public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserRequestDTO requestDTO) {
+    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO requestDTO) {
         User user = userMapper.toDomain(requestDTO);
         User created = createUserUseCase.createUser(user);
         return new ResponseEntity<>(userMapper.toResponse(created), HttpStatus.CREATED);

@@ -1,6 +1,7 @@
 package com.vehiclecare.vehiclecaremicro.infrastructure.rest.controller;
 
-import com.vehiclecare.vehiclecaremicro.application.dto.request.VehicleRequestDTO;
+import com.vehiclecare.vehiclecaremicro.application.dto.request.VehicleCreateRequestDTO;
+import com.vehiclecare.vehiclecaremicro.application.dto.request.VehicleUpdateRequestDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.VehicleResponseDTO;
 import com.vehiclecare.vehiclecaremicro.domain.model.Vehicle;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.CreateVehicleUseCase;
@@ -21,12 +22,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/vehicles")
 @RequiredArgsConstructor
+@Validated
 public class VehicleController {
 
     private final CreateVehicleUseCase createVehicleUseCase;
@@ -56,7 +60,7 @@ public class VehicleController {
     }
 
     @PostMapping
-    public ResponseEntity<VehicleResponseDTO> createVehicle(@RequestBody VehicleRequestDTO requestDTO) {
+    public ResponseEntity<VehicleResponseDTO> createVehicle(@Valid @RequestBody VehicleCreateRequestDTO requestDTO) {
         Vehicle vehicle = vehicleMapper.toDomain(requestDTO);
         Vehicle created = createVehicleUseCase.createVehicle(requestDTO.getUserId(), vehicle);
         return new ResponseEntity<>(vehicleMapper.toResponse(created), HttpStatus.CREATED);
@@ -65,7 +69,7 @@ public class VehicleController {
     @PutMapping("/{id}")
     public ResponseEntity<VehicleResponseDTO> updateVehicle(
             @PathVariable("id") String id,
-            @RequestBody VehicleRequestDTO requestDTO
+            @Valid @RequestBody VehicleUpdateRequestDTO requestDTO
     ) {
         Vehicle vehicle = vehicleMapper.toDomain(requestDTO);
         Vehicle updated = updateVehicleUseCase.updateVehicle(id, vehicle);
