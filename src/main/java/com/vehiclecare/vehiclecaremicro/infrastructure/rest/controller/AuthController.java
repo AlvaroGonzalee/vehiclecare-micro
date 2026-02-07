@@ -1,0 +1,53 @@
+package com.vehiclecare.vehiclecaremicro.infrastructure.rest.controller;
+
+import com.vehiclecare.vehiclecaremicro.application.dto.request.AuthLoginRequestDTO;
+import com.vehiclecare.vehiclecaremicro.application.dto.request.AuthRegisterRequestDTO;
+import com.vehiclecare.vehiclecaremicro.application.dto.response.AuthResponseDTO;
+import com.vehiclecare.vehiclecaremicro.application.service.TokenService;
+import com.vehiclecare.vehiclecaremicro.domain.model.User;
+import com.vehiclecare.vehiclecaremicro.domain.port.in.AuthenticateUserUseCase;
+import com.vehiclecare.vehiclecaremicro.domain.port.in.CreateUserUseCase;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final CreateUserUseCase createUserUseCase;
+    private final AuthenticateUserUseCase authenticateUserUseCase;
+    private final TokenService tokenService;
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody AuthRegisterRequestDTO requestDTO) {
+        User user = new User();
+        user.setEmail(requestDTO.getEmail());
+        user.setPassword(requestDTO.getPassword());
+        User created = createUserUseCase.createUser(user);
+
+        AuthResponseDTO response = new AuthResponseDTO(
+                created.getId(),
+                created.getEmail(),
+                tokenService.generateToken()
+        );
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody AuthLoginRequestDTO requestDTO) {
+        User user = authenticateUserUseCase.authenticate(requestDTO.getEmail(), requestDTO.getPassword());
+        AuthResponseDTO response = new AuthResponseDTO(
+                user.getId(),
+                user.getEmail(),
+                tokenService.generateToken()
+        );
+        return ResponseEntity.ok(response);
+    }
+}
