@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class CreateVehicleUseCaseImpl implements CreateVehicleUseCase {
@@ -21,6 +23,9 @@ public class CreateVehicleUseCaseImpl implements CreateVehicleUseCase {
         userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
         vehicle.setUserId(userId);
+        if (vehicle.getId() == null || vehicle.getId().isBlank()) {
+            vehicle.setId(UUID.randomUUID().toString().replace("-", "").substring(0, 8));
+        }
         return vehicleRepositoryPort.save(vehicle);
     }
 }

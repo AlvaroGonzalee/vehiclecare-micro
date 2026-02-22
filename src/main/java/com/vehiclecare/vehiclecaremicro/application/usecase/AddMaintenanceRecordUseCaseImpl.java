@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AddMaintenanceRecordUseCaseImpl implements AddMaintenanceRecordUseCase {
@@ -21,6 +23,9 @@ public class AddMaintenanceRecordUseCaseImpl implements AddMaintenanceRecordUseC
         vehicleRepositoryPort.findById(vehicleId)
                 .orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
         maintenanceRecord.setVehicleId(vehicleId);
+        if (maintenanceRecord.getId() == null || maintenanceRecord.getId().isBlank()) {
+            maintenanceRecord.setId(UUID.randomUUID().toString().replace("-", "").substring(0, 8));
+        }
         return maintenanceRepositoryPort.save(maintenanceRecord);
     }
 }
