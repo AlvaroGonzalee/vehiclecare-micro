@@ -1,6 +1,5 @@
 package com.vehiclecare.vehiclecaremicro.application.dto.request;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -11,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthRegisterRequestDTO {
+public class UserProfileUpdateRequestDTO {
     @NotBlank(message = "El nombre es obligatorio")
     @Size(max = 10, message = "El nombre no puede superar 10 caracteres")
     @Pattern(
@@ -19,11 +18,4 @@ public class AuthRegisterRequestDTO {
             message = "El nombre solo puede contener letras y espacios"
     )
     private String name;
-
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "El email no es válido")
-    private String email;
-
-    @NotBlank(message = "La contraseña es obligatoria")
-    private String password;
 }

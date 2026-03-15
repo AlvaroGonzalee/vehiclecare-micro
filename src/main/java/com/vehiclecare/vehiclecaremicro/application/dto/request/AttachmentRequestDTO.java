@@ -1,7 +1,6 @@
 package com.vehiclecare.vehiclecaremicro.application.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,10 +17,7 @@ public class AttachmentRequestDTO {
     private String fileName;
 
     @NotBlank(message = "El tipo de archivo es obligatorio")
-    @Pattern(
-            regexp = "(?i)^(jpg|jpeg|png|pdf|doc|docx|txt)$",
-            message = "El tipo de archivo no es válido"
-    )
+    @Size(max = 120, message = "El tipo de archivo no puede superar 120 caracteres")
     private String fileType;
 
     @Size(max = 500, message = "La ruta del archivo no puede superar 500 caracteres")

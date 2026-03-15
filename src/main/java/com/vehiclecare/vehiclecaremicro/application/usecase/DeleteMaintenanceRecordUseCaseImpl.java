@@ -1,5 +1,6 @@
 package com.vehiclecare.vehiclecaremicro.application.usecase;
 
+import com.vehiclecare.vehiclecaremicro.application.service.MaintenanceAttachmentService;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.DeleteMaintenanceRecordUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.MaintenanceRepositoryPort;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeleteMaintenanceRecordUseCaseImpl implements DeleteMaintenanceRecordUseCase {
 
     private final MaintenanceRepositoryPort maintenanceRepositoryPort;
+    private final MaintenanceAttachmentService maintenanceAttachmentService;
 
     @Override
     @Transactional
@@ -18,6 +20,7 @@ public class DeleteMaintenanceRecordUseCaseImpl implements DeleteMaintenanceReco
         if (maintenanceRepositoryPort.findById(recordId).isEmpty()) {
             return false;
         }
+        maintenanceAttachmentService.deleteAllFromRecord(recordId);
         maintenanceRepositoryPort.deleteById(recordId);
         return true;
     }

@@ -50,4 +50,7 @@ public class VehicleEntity {
 
     @Column(name = "fuel_type")
     private String fuelType;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
 }

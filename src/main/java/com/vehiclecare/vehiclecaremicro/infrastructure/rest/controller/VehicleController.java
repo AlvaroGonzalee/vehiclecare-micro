@@ -2,13 +2,16 @@ package com.vehiclecare.vehiclecaremicro.infrastructure.rest.controller;
 
 import com.vehiclecare.vehiclecaremicro.application.dto.request.VehicleCreateRequestDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.request.VehicleUpdateRequestDTO;
+import com.vehiclecare.vehiclecaremicro.application.dto.response.FileUploadResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.VehicleResponseDTO;
+import com.vehiclecare.vehiclecaremicro.application.service.MinioStorageService;
 import com.vehiclecare.vehiclecaremicro.domain.model.Vehicle;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.CreateVehicleUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.DeleteVehicleUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.GetVehicleUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.ListVehiclesUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.UpdateVehicleUseCase;
+import com.vehiclecare.vehiclecaremicro.domain.port.out.VehicleRepositoryPort;
 import com.vehiclecare.vehiclecaremicro.infrastructure.mapper.VehicleMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.validation.annotation.Validated;
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -38,6 +42,8 @@ public class VehicleController {
     private final ListVehiclesUseCase listVehiclesUseCase;
     private final UpdateVehicleUseCase updateVehicleUseCase;
     private final DeleteVehicleUseCase deleteVehicleUseCase;
+    private final VehicleRepositoryPort vehicleRepositoryPort;
+    private final MinioStorageService minioStorageService;
     private final VehicleMapper vehicleMapper;
 
     @GetMapping
@@ -83,5 +89,18 @@ public class VehicleController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/image")
+    public ResponseEntity<VehicleResponseDTO> uploadVehicleImage(
+            @PathVariable("id") String id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        Vehicle vehicle = vehicleRepositoryPort.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
+        FileUploadResponseDTO upload = minioStorageService.uploadImage(file, "vehicles/" + id);
+        vehicle.setImageUrl(upload.getObjectUrl());
+        Vehicle saved = vehicleRepositoryPort.save(vehicle);
+        return ResponseEntity.ok(vehicleMapper.toResponse(saved));
     }
 }

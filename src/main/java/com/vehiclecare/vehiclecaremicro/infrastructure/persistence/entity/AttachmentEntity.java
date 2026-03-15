@@ -33,7 +33,7 @@ public class AttachmentEntity {
     @Column(name = "file_name", nullable = false)
     private String fileName;
 
-    @Column(name = "file_type", nullable = false)
+    @Column(name = "file_type", nullable = false, length = 120)
     private String fileType;
 
     @Column(name = "file_path", nullable = false)

@@ -14,7 +14,10 @@ import lombok.Setter;
 @EqualsAndHashCode(of = "id")
 public class User {
     private String id;
+    private String name;
     private String email;
     private String password;
+    private String profileImageUrl;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

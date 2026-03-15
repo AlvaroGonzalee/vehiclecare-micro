@@ -21,4 +21,5 @@ public class Vehicle {
     private String vin;
     private Integer currentKilometers;
     private String fuelType;
+    private String imageUrl;
 }

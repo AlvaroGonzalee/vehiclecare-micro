@@ -28,13 +28,17 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody AuthRegisterRequestDTO requestDTO) {
         User user = new User();
+        user.setName(requestDTO.getName());
         user.setEmail(requestDTO.getEmail());
         user.setPassword(requestDTO.getPassword());
         User created = createUserUseCase.createUser(user);
 
         AuthResponseDTO response = new AuthResponseDTO(
                 created.getId(),
+                created.getName(),
                 created.getEmail(),
+                created.getProfileImageUrl(),
+                created.getCreatedAt(),
                 tokenService.generateToken()
         );
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -45,7 +49,10 @@ public class AuthController {
         User user = authenticateUserUseCase.authenticate(requestDTO.getEmail(), requestDTO.getPassword());
         AuthResponseDTO response = new AuthResponseDTO(
                 user.getId(),
+                user.getName(),
                 user.getEmail(),
+                user.getProfileImageUrl(),
+                user.getCreatedAt(),
                 tokenService.generateToken()
         );
         return ResponseEntity.ok(response);
