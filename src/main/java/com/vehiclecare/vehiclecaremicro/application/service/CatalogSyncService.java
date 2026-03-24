@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.Locale;
 import java.text.Normalizer;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.dao.PessimisticLockingFailureException;
@@ -23,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 @RequiredArgsConstructor
@@ -105,6 +105,9 @@ public class CatalogSyncService {
     private final BrandJpaRepository brandJpaRepository;
     private final ModelJpaRepository modelJpaRepository;
 
+    @Value("${catalog.sync.enabled:false}")
+    private boolean catalogSyncEnabled;
+
     public void syncCatalog() {
         if (!SYNC_LOCK.tryLock()) {
             logger.warn("Catalog sync skipped because another sync is already running");
@@ -166,9 +169,12 @@ public class CatalogSyncService {
     }
 
     @Scheduled(fixedDelayString = "PT720H")
-    @ConditionalOnProperty(name = "catalog.sync.enabled", havingValue = "true", matchIfMissing = true)
     @Transactional
     public void scheduledSync() {
+        if (!catalogSyncEnabled) {
+            logger.info("Catalog sync is disabled. Skipping scheduled sync.");
+            return;
+        }
         syncCatalog();
     }
 
