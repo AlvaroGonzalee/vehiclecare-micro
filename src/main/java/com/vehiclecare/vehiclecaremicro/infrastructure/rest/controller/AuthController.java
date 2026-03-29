@@ -3,7 +3,7 @@ package com.vehiclecare.vehiclecaremicro.infrastructure.rest.controller;
 import com.vehiclecare.vehiclecaremicro.application.dto.request.AuthLoginRequestDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.request.AuthRegisterRequestDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.AuthResponseDTO;
-import com.vehiclecare.vehiclecaremicro.application.service.TokenService;
+import com.vehiclecare.vehiclecaremicro.application.service.JwtService;
 import com.vehiclecare.vehiclecaremicro.domain.model.User;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.AuthenticateUserUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.CreateUserUseCase;
@@ -23,7 +23,7 @@ public class AuthController {
 
     private final CreateUserUseCase createUserUseCase;
     private final AuthenticateUserUseCase authenticateUserUseCase;
-    private final TokenService tokenService;
+    private final JwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody AuthRegisterRequestDTO requestDTO) {
@@ -39,7 +39,7 @@ public class AuthController {
                 created.getEmail(),
                 created.getProfileImageUrl(),
                 created.getCreatedAt(),
-                tokenService.generateToken()
+                jwtService.generateToken(created.getId(), created.getEmail())
         );
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -53,7 +53,7 @@ public class AuthController {
                 user.getEmail(),
                 user.getProfileImageUrl(),
                 user.getCreatedAt(),
-                tokenService.generateToken()
+                jwtService.generateToken(user.getId(), user.getEmail())
         );
         return ResponseEntity.ok(response);
     }
