@@ -15,8 +15,8 @@ public class UpdateMaintenanceRecordUseCaseImpl implements UpdateMaintenanceReco
     private final MaintenanceRepositoryPort maintenanceRepositoryPort;
     @Override
     @Transactional
-    public MaintenanceRecord update(String recordId, MaintenanceRecord maintenanceRecord) {
-        Optional<MaintenanceRecord> existingOptional = maintenanceRepositoryPort.findById(recordId);
+    public MaintenanceRecord update(String recordId, String userId, MaintenanceRecord maintenanceRecord) {
+        Optional<MaintenanceRecord> existingOptional = maintenanceRepositoryPort.findByIdAndUserId(recordId, userId);
         MaintenanceRecord existing = existingOptional.orElseThrow(() -> new IllegalArgumentException("Registro no encontrado"));
 
         if (maintenanceRecord.getVehicleId() != null && !maintenanceRecord.getVehicleId().equals(existing.getVehicleId())) {

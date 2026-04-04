@@ -4,5 +4,5 @@ import com.vehiclecare.vehiclecaremicro.domain.model.MaintenanceRecord;
 import java.util.List;
 
 public interface ListMaintenanceRecordsUseCase {
-    List<MaintenanceRecord> listByVehicleId(String vehicleId);
+    List<MaintenanceRecord> listByVehicleId(String vehicleId, String userId);
 }

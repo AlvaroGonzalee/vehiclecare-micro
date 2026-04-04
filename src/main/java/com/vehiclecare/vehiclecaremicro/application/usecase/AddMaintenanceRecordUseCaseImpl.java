@@ -19,8 +19,8 @@ public class AddMaintenanceRecordUseCaseImpl implements AddMaintenanceRecordUseC
 
     @Override
     @Transactional
-    public MaintenanceRecord addMaintenanceRecord(String vehicleId, MaintenanceRecord maintenanceRecord) {
-        vehicleRepositoryPort.findById(vehicleId)
+    public MaintenanceRecord addMaintenanceRecord(String vehicleId, String userId, MaintenanceRecord maintenanceRecord) {
+        vehicleRepositoryPort.findByIdAndUserId(vehicleId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
         maintenanceRecord.setVehicleId(vehicleId);
         if (maintenanceRecord.getId() == null || maintenanceRecord.getId().isBlank()) {

@@ -14,7 +14,7 @@ public class GetMaintenanceRecordUseCaseImpl implements GetMaintenanceRecordUseC
     private final MaintenanceRepositoryPort maintenanceRepositoryPort;
 
     @Override
-    public Optional<MaintenanceRecord> getById(String recordId) {
-        return maintenanceRepositoryPort.findById(recordId);
+    public Optional<MaintenanceRecord> getById(String recordId, String userId) {
+        return maintenanceRepositoryPort.findByIdAndUserId(recordId, userId);
     }
 }

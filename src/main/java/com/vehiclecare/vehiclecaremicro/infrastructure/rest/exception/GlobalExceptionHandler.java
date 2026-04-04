@@ -46,6 +46,12 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, "Solicitud inválida", request.getRequestURI(), List.of(detail));
     }
 
+    @ExceptionHandler(OwnershipAccessException.class)
+    public ResponseEntity<ApiErrorResponse> handleOwnershipAccess(OwnershipAccessException ex, HttpServletRequest request) {
+        ApiFieldError detail = new ApiFieldError("general", ex.getMessage());
+        return buildResponse(HttpStatus.FORBIDDEN, "Acceso denegado", request.getRequestURI(), List.of(detail));
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidJson(HttpMessageNotReadableException ex, HttpServletRequest request) {
         ApiFieldError detail = new ApiFieldError("body", "JSON inválido");

@@ -16,8 +16,8 @@ public class DeleteMaintenanceRecordUseCaseImpl implements DeleteMaintenanceReco
 
     @Override
     @Transactional
-    public boolean delete(String recordId) {
-        if (maintenanceRepositoryPort.findById(recordId).isEmpty()) {
+    public boolean delete(String recordId, String userId) {
+        if (maintenanceRepositoryPort.findByIdAndUserId(recordId, userId).isEmpty()) {
             return false;
         }
         maintenanceAttachmentService.deleteAllFromRecord(recordId);

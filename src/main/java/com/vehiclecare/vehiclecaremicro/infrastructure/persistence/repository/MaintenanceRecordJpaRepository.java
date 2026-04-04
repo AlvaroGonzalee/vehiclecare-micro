@@ -8,5 +8,6 @@ import java.util.Optional;
 
 public interface MaintenanceRecordJpaRepository extends JpaRepository<MaintenanceRecordEntity, String> {
     List<MaintenanceRecordEntity> findByVehicle_Id(String vehicleId);
+    List<MaintenanceRecordEntity> findByVehicle_IdAndVehicle_User_Id(String vehicleId, String userId);
     Optional<MaintenanceRecordEntity> findByIdAndVehicle_User_Id(String id, String userId);
 }

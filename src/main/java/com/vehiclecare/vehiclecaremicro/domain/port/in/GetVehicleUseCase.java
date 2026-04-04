@@ -4,5 +4,5 @@ import com.vehiclecare.vehiclecaremicro.domain.model.Vehicle;
 import java.util.Optional;
 
 public interface GetVehicleUseCase {
-    Optional<Vehicle> getVehicleById(String id);
+    Optional<Vehicle> getVehicleById(String id, String userId);
 }

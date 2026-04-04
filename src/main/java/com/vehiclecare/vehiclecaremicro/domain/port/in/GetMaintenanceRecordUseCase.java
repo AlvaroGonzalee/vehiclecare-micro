@@ -4,5 +4,5 @@ import com.vehiclecare.vehiclecaremicro.domain.model.MaintenanceRecord;
 import java.util.Optional;
 
 public interface GetMaintenanceRecordUseCase {
-    Optional<MaintenanceRecord> getById(String recordId);
+    Optional<MaintenanceRecord> getById(String recordId, String userId);
 }

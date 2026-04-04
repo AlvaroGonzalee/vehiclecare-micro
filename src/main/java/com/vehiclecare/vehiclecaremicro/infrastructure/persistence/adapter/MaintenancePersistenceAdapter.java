@@ -34,8 +34,22 @@ public class MaintenancePersistenceAdapter implements MaintenanceRepositoryPort 
     }
 
     @Override
+    public List<MaintenanceRecord> findByVehicleIdAndUserId(String vehicleId, String userId) {
+        return maintenanceRecordJpaRepository.findByVehicle_IdAndVehicle_User_Id(vehicleId, userId)
+                .stream()
+                .map(maintenanceRecordMapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public Optional<MaintenanceRecord> findById(String id) {
         return maintenanceRecordJpaRepository.findById(id)
+                .map(maintenanceRecordMapper::toDomain);
+    }
+
+    @Override
+    public Optional<MaintenanceRecord> findByIdAndUserId(String id, String userId) {
+        return maintenanceRecordJpaRepository.findByIdAndVehicle_User_Id(id, userId)
                 .map(maintenanceRecordMapper::toDomain);
     }
 

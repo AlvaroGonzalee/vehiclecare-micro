@@ -16,8 +16,8 @@ public class UpdateVehicleUseCaseImpl implements UpdateVehicleUseCase {
 
     @Override
     @Transactional
-    public Vehicle updateVehicle(String vehicleId, Vehicle vehicle) {
-        Optional<Vehicle> existingOptional = vehicleRepositoryPort.findById(vehicleId);
+    public Vehicle updateVehicle(String vehicleId, String userId, Vehicle vehicle) {
+        Optional<Vehicle> existingOptional = vehicleRepositoryPort.findByIdAndUserId(vehicleId, userId);
         Vehicle existing = existingOptional.orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
 
         if (vehicle.getUserId() != null && !vehicle.getUserId().equals(existing.getUserId())) {

@@ -31,6 +31,11 @@ public class VehiclePersistenceAdapter implements VehicleRepositoryPort {
     }
 
     @Override
+    public Optional<Vehicle> findByIdAndUserId(String id, String userId) {
+        return vehicleJpaRepository.findByIdAndUser_Id(id, userId).map(vehicleMapper::toDomain);
+    }
+
+    @Override
     public List<Vehicle> findByUserId(String userId) {
         return vehicleJpaRepository.findByUser_Id(userId)
                 .stream()

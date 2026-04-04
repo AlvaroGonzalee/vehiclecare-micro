@@ -14,8 +14,8 @@ public class DeleteVehicleUseCaseImpl implements DeleteVehicleUseCase {
 
     @Override
     @Transactional
-    public boolean deleteVehicle(String vehicleId) {
-        if (vehicleRepositoryPort.findById(vehicleId).isEmpty()) {
+    public boolean deleteVehicle(String vehicleId, String userId) {
+        if (vehicleRepositoryPort.findByIdAndUserId(vehicleId, userId).isEmpty()) {
             return false;
         }
         vehicleRepositoryPort.deleteById(vehicleId);

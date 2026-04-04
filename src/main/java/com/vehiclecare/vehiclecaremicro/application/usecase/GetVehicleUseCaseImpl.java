@@ -14,7 +14,7 @@ public class GetVehicleUseCaseImpl implements GetVehicleUseCase {
     private final VehicleRepositoryPort vehicleRepositoryPort;
 
     @Override
-    public Optional<Vehicle> getVehicleById(String id) {
-        return vehicleRepositoryPort.findById(id);
+    public Optional<Vehicle> getVehicleById(String id, String userId) {
+        return vehicleRepositoryPort.findByIdAndUserId(id, userId);
     }
 }
