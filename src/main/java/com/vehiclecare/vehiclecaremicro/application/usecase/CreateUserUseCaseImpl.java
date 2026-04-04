@@ -4,6 +4,7 @@ import com.vehiclecare.vehiclecaremicro.application.service.ValidationService;
 import com.vehiclecare.vehiclecaremicro.domain.model.User;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.CreateUserUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.UserRepositoryPort;
+import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ConflictException;
 import java.util.Locale;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class CreateUserUseCaseImpl implements CreateUserUseCase {
     public User createUser(User user) {
         validationService.normalizeAndValidateUser(user);
         if (userRepositoryPort.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("Email ya existe");
+            throw new ConflictException("Ya existe un usuario con ese email");
         }
         if (user.getId() == null || user.getId().isBlank()) {
             user.setId(generateId());

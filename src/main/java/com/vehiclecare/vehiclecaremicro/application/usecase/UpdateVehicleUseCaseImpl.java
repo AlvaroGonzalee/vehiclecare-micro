@@ -4,6 +4,8 @@ import com.vehiclecare.vehiclecaremicro.application.service.ValidationService;
 import com.vehiclecare.vehiclecaremicro.domain.model.Vehicle;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.UpdateVehicleUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.VehicleRepositoryPort;
+import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.BusinessValidationException;
+import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ResourceNotFoundException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,10 +22,10 @@ public class UpdateVehicleUseCaseImpl implements UpdateVehicleUseCase {
     @Transactional
     public Vehicle updateVehicle(String vehicleId, String userId, Vehicle vehicle) {
         Optional<Vehicle> existingOptional = vehicleRepositoryPort.findByIdAndUserId(vehicleId, userId);
-        Vehicle existing = existingOptional.orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
+        Vehicle existing = existingOptional.orElseThrow(() -> new ResourceNotFoundException("Vehículo no encontrado"));
 
         if (vehicle.getUserId() != null && !vehicle.getUserId().equals(existing.getUserId())) {
-            throw new IllegalArgumentException("El vehículo no pertenece al usuario");
+            throw new BusinessValidationException("El vehículo no pertenece al usuario");
         }
 
         validationService.normalizeAndValidateVehicle(vehicle);

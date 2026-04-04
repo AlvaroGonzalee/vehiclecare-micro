@@ -3,6 +3,7 @@ package com.vehiclecare.vehiclecaremicro.application.usecase;
 import com.vehiclecare.vehiclecaremicro.domain.model.MaintenanceRecord;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.GetMaintenanceRecordUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.MaintenanceRepositoryPort;
+import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ResourceNotFoundException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,10 @@ public class GetMaintenanceRecordUseCaseImpl implements GetMaintenanceRecordUseC
 
     @Override
     public Optional<MaintenanceRecord> getById(String recordId, String userId) {
-        return maintenanceRepositoryPort.findByIdAndUserId(recordId, userId);
+        Optional<MaintenanceRecord> record = maintenanceRepositoryPort.findByIdAndUserId(recordId, userId);
+        if (record.isEmpty()) {
+            throw new ResourceNotFoundException("Registro no encontrado");
+        }
+        return record;
     }
 }

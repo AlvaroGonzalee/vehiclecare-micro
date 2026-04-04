@@ -1,6 +1,8 @@
 package com.vehiclecare.vehiclecaremicro.application.service;
 
 import com.vehiclecare.vehiclecaremicro.domain.model.Attachment;
+import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.BusinessValidationException;
+import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ResourceNotFoundException;
 import com.vehiclecare.vehiclecaremicro.infrastructure.mapper.AttachmentMapper;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.entity.AttachmentEntity;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.entity.MaintenanceRecordEntity;
@@ -30,12 +32,12 @@ public class MaintenanceAttachmentService {
     @Transactional
     public List<Attachment> upload(String recordId, String userId, MultipartFile[] files) {
         if (files == null || files.length == 0) {
-            throw new IllegalArgumentException("Debes adjuntar al menos un archivo");
+            throw new BusinessValidationException("Debes adjuntar al menos un archivo");
         }
         MaintenanceRecordEntity record = getOwnedRecord(recordId, userId);
         int currentAttachments = record.getAttachments() == null ? 0 : record.getAttachments().size();
         if (currentAttachments + files.length > MAX_ATTACHMENTS_PER_RECORD) {
-            throw new IllegalArgumentException("Solo puedes adjuntar un máximo de 2 archivos por registro");
+            throw new BusinessValidationException("Solo puedes adjuntar un máximo de 2 archivos por registro");
         }
 
         List<Attachment> uploaded = new ArrayList<>();
@@ -92,15 +94,15 @@ public class MaintenanceAttachmentService {
 
     private AttachmentEntity getRecordAttachment(String recordId, String attachmentId) {
         return attachmentJpaRepository.findByIdAndMaintenanceRecord_Id(attachmentId, recordId)
-                .orElseThrow(() -> new IllegalArgumentException("Adjunto no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Adjunto no encontrado"));
     }
 
     private MaintenanceRecordEntity getOwnedRecord(String recordId, String userId) {
         if (userId == null || userId.isBlank()) {
-            throw new IllegalArgumentException("El usuario es obligatorio");
+            throw new BusinessValidationException("El usuario es obligatorio");
         }
         return maintenanceRecordJpaRepository.findByIdAndVehicle_User_Id(recordId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("El registro no pertenece al usuario"));
+                .orElseThrow(() -> new ResourceNotFoundException("Registro no encontrado"));
     }
 
     private String generateId() {

@@ -3,6 +3,7 @@ package com.vehiclecare.vehiclecaremicro.application.usecase;
 import com.vehiclecare.vehiclecaremicro.application.service.MaintenanceAttachmentService;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.DeleteMaintenanceRecordUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.MaintenanceRepositoryPort;
+import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +19,7 @@ public class DeleteMaintenanceRecordUseCaseImpl implements DeleteMaintenanceReco
     @Transactional
     public boolean delete(String recordId, String userId) {
         if (maintenanceRepositoryPort.findByIdAndUserId(recordId, userId).isEmpty()) {
-            return false;
+            throw new ResourceNotFoundException("Registro no encontrado");
         }
         maintenanceAttachmentService.deleteAllFromRecord(recordId);
         maintenanceRepositoryPort.deleteById(recordId);

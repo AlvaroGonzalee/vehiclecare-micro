@@ -46,6 +46,42 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, "Solicitud inválida", request.getRequestURI(), List.of(detail));
     }
 
+    @ExceptionHandler(BusinessValidationException.class)
+    public ResponseEntity<ApiErrorResponse> handleBusinessValidation(
+            BusinessValidationException ex,
+            HttpServletRequest request
+    ) {
+        ApiFieldError detail = new ApiFieldError("general", ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, "Validación de negocio", request.getRequestURI(), List.of(detail));
+    }
+
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationFailed(
+            AuthenticationFailedException ex,
+            HttpServletRequest request
+    ) {
+        ApiFieldError detail = new ApiFieldError("general", ex.getMessage());
+        return buildResponse(HttpStatus.UNAUTHORIZED, "No autenticado", request.getRequestURI(), List.of(detail));
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleResourceNotFound(
+            ResourceNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        ApiFieldError detail = new ApiFieldError("general", ex.getMessage());
+        return buildResponse(HttpStatus.NOT_FOUND, "Recurso no encontrado", request.getRequestURI(), List.of(detail));
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiErrorResponse> handleConflict(
+            ConflictException ex,
+            HttpServletRequest request
+    ) {
+        ApiFieldError detail = new ApiFieldError("general", ex.getMessage());
+        return buildResponse(HttpStatus.CONFLICT, "Conflicto", request.getRequestURI(), List.of(detail));
+    }
+
     @ExceptionHandler(OwnershipAccessException.class)
     public ResponseEntity<ApiErrorResponse> handleOwnershipAccess(OwnershipAccessException ex, HttpServletRequest request) {
         ApiFieldError detail = new ApiFieldError("general", ex.getMessage());

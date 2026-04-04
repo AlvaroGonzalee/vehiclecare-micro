@@ -5,6 +5,7 @@ import com.vehiclecare.vehiclecaremicro.domain.model.MaintenanceRecord;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.AddMaintenanceRecordUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.MaintenanceRepositoryPort;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.VehicleRepositoryPort;
+import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,7 @@ public class AddMaintenanceRecordUseCaseImpl implements AddMaintenanceRecordUseC
     @Transactional
     public MaintenanceRecord addMaintenanceRecord(String vehicleId, String userId, MaintenanceRecord maintenanceRecord) {
         vehicleRepositoryPort.findByIdAndUserId(vehicleId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Vehículo no encontrado"));
         maintenanceRecord.setVehicleId(vehicleId);
         validationService.normalizeAndValidateMaintenance(maintenanceRecord);
         if (maintenanceRecord.getId() == null || maintenanceRecord.getId().isBlank()) {

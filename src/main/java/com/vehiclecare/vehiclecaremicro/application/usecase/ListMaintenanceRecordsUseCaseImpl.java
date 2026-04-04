@@ -4,6 +4,7 @@ import com.vehiclecare.vehiclecaremicro.domain.model.MaintenanceRecord;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.ListMaintenanceRecordsUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.MaintenanceRepositoryPort;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.VehicleRepositoryPort;
+import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ResourceNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ public class ListMaintenanceRecordsUseCaseImpl implements ListMaintenanceRecords
     @Override
     public List<MaintenanceRecord> listByVehicleId(String vehicleId, String userId) {
         vehicleRepositoryPort.findByIdAndUserId(vehicleId, userId)
-                .orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Vehículo no encontrado"));
         return maintenanceRepositoryPort.findByVehicleIdAndUserId(vehicleId, userId);
     }
 }

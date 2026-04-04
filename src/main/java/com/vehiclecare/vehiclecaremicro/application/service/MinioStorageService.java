@@ -1,6 +1,7 @@
 package com.vehiclecare.vehiclecaremicro.application.service;
 
 import com.vehiclecare.vehiclecaremicro.application.dto.response.FileUploadResponseDTO;
+import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.BusinessValidationException;
 import io.minio.BucketExistsArgs;
 import io.minio.GetObjectArgs;
 import io.minio.MakeBucketArgs;
@@ -113,7 +114,7 @@ public class MinioStorageService {
                             .build()
             );
         } catch (Exception ex) {
-            throw new IllegalArgumentException("No se pudo descargar el archivo");
+            throw new BusinessValidationException("No se pudo descargar el archivo");
         }
     }
 
@@ -129,39 +130,39 @@ public class MinioStorageService {
                             .build()
             );
         } catch (Exception ex) {
-            throw new IllegalArgumentException("No se pudo borrar el archivo");
+            throw new BusinessValidationException("No se pudo borrar el archivo");
         }
     }
 
     private void validateImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("El archivo es obligatorio");
+            throw new BusinessValidationException("El archivo es obligatorio");
         }
         if (file.getSize() > MAX_FILE_SIZE_BYTES) {
-            throw new IllegalArgumentException("La imagen supera el límite de 500MB");
+            throw new BusinessValidationException("La imagen supera el límite de 500MB");
         }
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType)) {
-            throw new IllegalArgumentException("Formato no permitido. Usa JPG, PNG o WEBP");
+            throw new BusinessValidationException("Formato no permitido. Usa JPG, PNG o WEBP");
         }
     }
 
     private void validateDocument(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("El archivo es obligatorio");
+            throw new BusinessValidationException("El archivo es obligatorio");
         }
         if (file.getSize() > MAX_DOCUMENT_SIZE_BYTES) {
-            throw new IllegalArgumentException("El archivo supera el límite de 10MB");
+            throw new BusinessValidationException("El archivo supera el límite de 10MB");
         }
         String extension = getExtension(file.getOriginalFilename(), file.getContentType());
         String contentType = file.getContentType();
         if (!ALLOWED_DOCUMENT_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("Formato no permitido. Usa PDF, DOC, DOCX, JPG o PNG");
+            throw new BusinessValidationException("Formato no permitido. Usa PDF, DOC, DOCX, JPG o PNG");
         }
         if (contentType != null
                 && !"application/octet-stream".equals(contentType)
                 && !ALLOWED_DOCUMENT_TYPES.contains(contentType)) {
-            throw new IllegalArgumentException("Formato no permitido. Usa PDF, DOC, DOCX, JPG o PNG");
+            throw new BusinessValidationException("Formato no permitido. Usa PDF, DOC, DOCX, JPG o PNG");
         }
     }
 
@@ -188,9 +189,9 @@ public class MinioStorageService {
             );
             return objectKey;
         } catch (MinioException | IOException ex) {
-            throw new IllegalArgumentException("No se pudo subir el archivo a MinIO");
+            throw new BusinessValidationException("No se pudo subir el archivo a MinIO");
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Error inesperado al subir el archivo");
+            throw new BusinessValidationException("Error inesperado al subir el archivo");
         }
     }
 
