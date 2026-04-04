@@ -1,5 +1,6 @@
 package com.vehiclecare.vehiclecaremicro.application.usecase;
 
+import com.vehiclecare.vehiclecaremicro.application.service.ValidationService;
 import com.vehiclecare.vehiclecaremicro.domain.model.Vehicle;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.UpdateVehicleUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.VehicleRepositoryPort;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateVehicleUseCaseImpl implements UpdateVehicleUseCase {
 
     private final VehicleRepositoryPort vehicleRepositoryPort;
+    private final ValidationService validationService;
 
     @Override
     @Transactional
@@ -24,6 +26,7 @@ public class UpdateVehicleUseCaseImpl implements UpdateVehicleUseCase {
             throw new IllegalArgumentException("El vehículo no pertenece al usuario");
         }
 
+        validationService.normalizeAndValidateVehicle(vehicle);
         existing.setBrand(vehicle.getBrand());
         existing.setModel(vehicle.getModel());
         existing.setYear(vehicle.getYear());

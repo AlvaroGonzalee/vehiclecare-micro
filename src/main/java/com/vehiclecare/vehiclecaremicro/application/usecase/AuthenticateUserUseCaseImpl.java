@@ -3,6 +3,7 @@ package com.vehiclecare.vehiclecaremicro.application.usecase;
 import com.vehiclecare.vehiclecaremicro.domain.model.User;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.AuthenticateUserUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.UserRepositoryPort;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,8 @@ public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
 
     @Override
     public User authenticate(String email, String password) {
-        User user = userRepositoryPort.findByEmail(email)
+        String normalizedEmail = email == null ? null : email.trim().toLowerCase(Locale.ROOT);
+        User user = userRepositoryPort.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {

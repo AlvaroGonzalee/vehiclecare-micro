@@ -1,7 +1,11 @@
 package com.vehiclecare.vehiclecaremicro.application.dto.request;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,17 +27,29 @@ public class VehicleCreateRequestDTO {
     private String model;
 
     @NotNull(message = "El año es obligatorio")
+    @Min(value = 1900, message = "El año debe ser posterior a 1900")
+    @Max(value = 2100, message = "El año no puede ser tan alto")
     private Integer year;
 
     @NotBlank(message = "La matrícula es obligatoria")
-    @Size(min = 7, max = 7, message = "La matrícula debe tener 7 caracteres")
+    @Pattern(
+            regexp = "^[0-9]{4}\\s?[B-DF-HJ-NP-TV-Zb-df-hj-np-tv-z]{3}$",
+            message = "La matrícula debe tener formato español 1234ABC o 1234 ABC"
+    )
     private String licensePlate;
 
-    @Size(max = 50, message = "El VIN no puede superar 50 caracteres")
+    @Pattern(
+            regexp = "^$|^[A-HJ-NPR-Z0-9]{17}$",
+            message = "El VIN debe tener 17 caracteres alfanuméricos válidos"
+    )
     private String vin;
 
+    @PositiveOrZero(message = "Los kilómetros actuales no pueden ser negativos")
     private Integer currentKilometers;
 
-    @Size(max = 50, message = "El tipo de combustible no puede superar 50 caracteres")
+    @Pattern(
+            regexp = "^(Gasolina|Diésel|Híbrido|Eléctrico)$",
+            message = "El tipo de combustible debe ser Gasolina, Diésel, Híbrido o Eléctrico"
+    )
     private String fuelType;
 }

@@ -1,5 +1,6 @@
 package com.vehiclecare.vehiclecaremicro.application.usecase;
 
+import com.vehiclecare.vehiclecaremicro.application.service.ValidationService;
 import com.vehiclecare.vehiclecaremicro.domain.model.MaintenanceRecord;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.UpdateMaintenanceRecordUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.MaintenanceRepositoryPort;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateMaintenanceRecordUseCaseImpl implements UpdateMaintenanceRecordUseCase {
 
     private final MaintenanceRepositoryPort maintenanceRepositoryPort;
+    private final ValidationService validationService;
     @Override
     @Transactional
     public MaintenanceRecord update(String recordId, String userId, MaintenanceRecord maintenanceRecord) {
@@ -23,6 +25,7 @@ public class UpdateMaintenanceRecordUseCaseImpl implements UpdateMaintenanceReco
             throw new IllegalArgumentException("El registro no pertenece al vehículo");
         }
 
+        validationService.normalizeAndValidateMaintenance(maintenanceRecord);
         existing.setTitle(maintenanceRecord.getTitle());
         existing.setDate(maintenanceRecord.getDate());
         existing.setCategory(maintenanceRecord.getCategory());
