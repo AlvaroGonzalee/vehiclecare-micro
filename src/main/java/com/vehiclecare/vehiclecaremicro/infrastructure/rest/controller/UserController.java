@@ -5,6 +5,7 @@ import com.vehiclecare.vehiclecaremicro.application.dto.request.UserRequestDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.FileUploadResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.UserResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.service.MinioStorageService;
+import com.vehiclecare.vehiclecaremicro.application.service.PublicFileUrlService;
 import com.vehiclecare.vehiclecaremicro.domain.model.User;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.CreateUserUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.UserRepositoryPort;
@@ -36,21 +37,25 @@ public class UserController {
     private final CreateUserUseCase createUserUseCase;
     private final UserRepositoryPort userRepositoryPort;
     private final MinioStorageService minioStorageService;
+    private final PublicFileUrlService publicFileUrlService;
     private final UserMapper userMapper;
     private final AuthenticationContext authenticationContext;
 
     @PostMapping
-    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO requestDTO) {
+    public ResponseEntity<UserResponseDTO> createUser(
+            @Valid @RequestBody UserRequestDTO requestDTO,
+            HttpServletRequest request
+    ) {
         User user = userMapper.toDomain(requestDTO);
         User created = createUserUseCase.createUser(user);
-        return new ResponseEntity<>(userMapper.toResponse(created), HttpStatus.CREATED);
+        return new ResponseEntity<>(toResponse(created, request), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getById(@PathVariable("id") String id, HttpServletRequest request) {
         ensureOwnership(id, request);
         return userRepositoryPort.findById(id)
-                .map(userMapper::toResponse)
+                .map(user -> toResponse(user, request))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -66,7 +71,7 @@ public class UserController {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
         existing.setName(requestDTO.getName().trim());
         User saved = userRepositoryPort.save(existing);
-        return ResponseEntity.ok(userMapper.toResponse(saved));
+        return ResponseEntity.ok(toResponse(saved, request));
     }
 
     @PostMapping("/{id}/profile-image")
@@ -79,9 +84,17 @@ public class UserController {
         User existing = userRepositoryPort.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
         FileUploadResponseDTO upload = minioStorageService.uploadImage(file, "profiles/" + id);
-        existing.setProfileImageUrl(upload.getObjectUrl());
+        existing.setProfileImageUrl(upload.getObjectKey());
         User saved = userRepositoryPort.save(existing);
-        return ResponseEntity.ok(userMapper.toResponse(saved));
+        return ResponseEntity.ok(toResponse(saved, request));
+    }
+
+    private UserResponseDTO toResponse(User user, HttpServletRequest request) {
+        UserResponseDTO response = userMapper.toResponse(user);
+        response.setProfileImageUrl(
+                publicFileUrlService.buildObjectUrl(request, response.getProfileImageUrl())
+        );
+        return response;
     }
 
     private void ensureOwnership(String requestedUserId, HttpServletRequest request) {

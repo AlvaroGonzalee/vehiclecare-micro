@@ -5,6 +5,7 @@ import com.vehiclecare.vehiclecaremicro.application.dto.request.VehicleUpdateReq
 import com.vehiclecare.vehiclecaremicro.application.dto.response.FileUploadResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.VehicleResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.service.MinioStorageService;
+import com.vehiclecare.vehiclecaremicro.application.service.PublicFileUrlService;
 import com.vehiclecare.vehiclecaremicro.domain.model.Vehicle;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.CreateVehicleUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.DeleteVehicleUseCase;
@@ -47,6 +48,7 @@ public class VehicleController {
     private final DeleteVehicleUseCase deleteVehicleUseCase;
     private final VehicleRepositoryPort vehicleRepositoryPort;
     private final MinioStorageService minioStorageService;
+    private final PublicFileUrlService publicFileUrlService;
     private final VehicleMapper vehicleMapper;
     private final AuthenticationContext authenticationContext;
 
@@ -62,7 +64,7 @@ public class VehicleController {
 
         List<VehicleResponseDTO> vehicles = listVehiclesUseCase.listByUserId(authenticatedUserId)
                 .stream()
-                .map(vehicleMapper::toResponse)
+                .map(vehicle -> toResponse(vehicle, request))
                 .toList();
         return ResponseEntity.ok(vehicles);
     }
@@ -70,7 +72,7 @@ public class VehicleController {
     @GetMapping("/{id}")
     public ResponseEntity<VehicleResponseDTO> getVehicle(@PathVariable("id") String id, HttpServletRequest request) {
         return getVehicleUseCase.getVehicleById(id, authenticatedUserId(request))
-                .map(vehicleMapper::toResponse)
+                .map(vehicle -> toResponse(vehicle, request))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -86,7 +88,7 @@ public class VehicleController {
         }
         Vehicle vehicle = vehicleMapper.toDomain(requestDTO);
         Vehicle created = createVehicleUseCase.createVehicle(authenticatedUserId, vehicle);
-        return new ResponseEntity<>(vehicleMapper.toResponse(created), HttpStatus.CREATED);
+        return new ResponseEntity<>(toResponse(created, request), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
@@ -97,7 +99,7 @@ public class VehicleController {
     ) {
         Vehicle vehicle = vehicleMapper.toDomain(requestDTO);
         Vehicle updated = updateVehicleUseCase.updateVehicle(id, authenticatedUserId(request), vehicle);
-        return ResponseEntity.ok(vehicleMapper.toResponse(updated));
+        return ResponseEntity.ok(toResponse(updated, request));
     }
 
     @DeleteMapping("/{id}")
@@ -118,9 +120,15 @@ public class VehicleController {
         Vehicle vehicle = vehicleRepositoryPort.findByIdAndUserId(id, authenticatedUserId(request))
                 .orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
         FileUploadResponseDTO upload = minioStorageService.uploadImage(file, "vehicles/" + id);
-        vehicle.setImageUrl(upload.getObjectUrl());
+        vehicle.setImageUrl(upload.getObjectKey());
         Vehicle saved = vehicleRepositoryPort.save(vehicle);
-        return ResponseEntity.ok(vehicleMapper.toResponse(saved));
+        return ResponseEntity.ok(toResponse(saved, request));
+    }
+
+    private VehicleResponseDTO toResponse(Vehicle vehicle, HttpServletRequest request) {
+        VehicleResponseDTO response = vehicleMapper.toResponse(vehicle);
+        response.setImageUrl(publicFileUrlService.buildObjectUrl(request, response.getImageUrl()));
+        return response;
     }
 
     private String authenticatedUserId(HttpServletRequest request) {

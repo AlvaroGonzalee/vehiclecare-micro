@@ -5,6 +5,7 @@ import com.vehiclecare.vehiclecaremicro.application.dto.request.MaintenanceRecor
 import com.vehiclecare.vehiclecaremicro.application.dto.response.AttachmentResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.MaintenanceRecordResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.service.MaintenanceAttachmentService;
+import com.vehiclecare.vehiclecaremicro.application.service.PublicFileUrlService;
 import com.vehiclecare.vehiclecaremicro.domain.model.MaintenanceRecord;
 import com.vehiclecare.vehiclecaremicro.infrastructure.mapper.AttachmentMapper;
 import com.vehiclecare.vehiclecaremicro.domain.port.in.AddMaintenanceRecordUseCase;
@@ -52,6 +53,7 @@ public class MaintenanceRecordController {
     private final MaintenanceRecordMapper maintenanceRecordMapper;
     private final MaintenanceAttachmentService maintenanceAttachmentService;
     private final AttachmentMapper attachmentMapper;
+    private final PublicFileUrlService publicFileUrlService;
     private final AuthenticationContext authenticationContext;
 
     @GetMapping("/vehicles/{vehicleId}/records")
@@ -64,7 +66,7 @@ public class MaintenanceRecordController {
                         authenticatedUserId(request)
                 )
                 .stream()
-                .map(maintenanceRecordMapper::toResponse)
+                .map(record -> toResponse(record, request))
                 .toList();
         return ResponseEntity.ok(records);
     }
@@ -72,7 +74,7 @@ public class MaintenanceRecordController {
     @GetMapping("/records/{id}")
     public ResponseEntity<MaintenanceRecordResponseDTO> getRecord(@PathVariable("id") String id, HttpServletRequest request) {
         return getMaintenanceRecordUseCase.getById(id, authenticatedUserId(request))
-                .map(maintenanceRecordMapper::toResponse)
+                .map(record -> toResponse(record, request))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -89,7 +91,7 @@ public class MaintenanceRecordController {
                 authenticatedUserId(request),
                 maintenance
         );
-        return new ResponseEntity<>(maintenanceRecordMapper.toResponse(created), HttpStatus.CREATED);
+        return new ResponseEntity<>(toResponse(created, request), HttpStatus.CREATED);
     }
 
     @PutMapping("/records/{id}")
@@ -100,7 +102,7 @@ public class MaintenanceRecordController {
     ) {
         MaintenanceRecord maintenance = maintenanceRecordMapper.toDomain(requestDTO);
         MaintenanceRecord updated = updateMaintenanceRecordUseCase.update(id, authenticatedUserId(request), maintenance);
-        return ResponseEntity.ok(maintenanceRecordMapper.toResponse(updated));
+        return ResponseEntity.ok(toResponse(updated, request));
     }
 
     @DeleteMapping("/records/{id}")
@@ -125,6 +127,7 @@ public class MaintenanceRecordController {
                 )
                 .stream()
                 .map(attachmentMapper::toResponse)
+                .map(attachment -> toAttachmentResponse(attachment, request))
                 .toList();
         return new ResponseEntity<>(attachments, HttpStatus.CREATED);
     }
@@ -165,5 +168,21 @@ public class MaintenanceRecordController {
 
     private String authenticatedUserId(HttpServletRequest request) {
         return authenticationContext.requireCurrentUser(request).userId();
+    }
+
+    private MaintenanceRecordResponseDTO toResponse(MaintenanceRecord record, HttpServletRequest request) {
+        MaintenanceRecordResponseDTO response = maintenanceRecordMapper.toResponse(record);
+        response.setAttachments(
+                response.getAttachments()
+                        .stream()
+                        .map(attachment -> toAttachmentResponse(attachment, request))
+                        .toList()
+        );
+        return response;
+    }
+
+    private AttachmentResponseDTO toAttachmentResponse(AttachmentResponseDTO attachment, HttpServletRequest request) {
+        attachment.setFilePath(publicFileUrlService.buildObjectUrl(request, attachment.getFilePath()));
+        return attachment;
     }
 }
