@@ -52,7 +52,7 @@ public class MinioStorageService {
     @Value("${minio.bucket:vehiclecare}")
     private String bucketName;
 
-    @Value("${minio.endpoint:http://localhost:9000}")
+    @Value("${minio.endpoint}")
     private String endpoint;
 
     @Value("${minio.initialize-bucket:false}")
