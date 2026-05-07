@@ -25,6 +25,6 @@ public class AuthRegisterRequestDTO {
     private String email;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, max = 72, message = "La contraseña debe tener entre 6 y 72 caracteres")
+    @Size(min = 4, message = "La contraseña debe tener al menos 4 caracteres")
     private String password;
 }
