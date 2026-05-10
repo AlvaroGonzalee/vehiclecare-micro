@@ -1,0 +1,1144 @@
+openapi: 3.0.3
+info:
+  title: VehicleCare API
+  version: 1.0.0
+  description: >
+    Contrato OpenAPI del backend `vehiclecare-micro` basado en los endpoints
+    actualmente usados por la app y expuestos por los controladores activos.
+servers:
+  - url: http://localhost:8080
+    description: Entorno local por defecto
+tags:
+  - name: Auth
+  - name: Profile
+  - name: Vehicles
+  - name: Maintenance
+  - name: Catalog
+  - name: Files
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrar usuario
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRegisterRequest'
+            example:
+              name: Alvaro
+              email: alvaro@example.com
+              password: "1234"
+      responses:
+        '201':
+          description: Usuario registrado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesión
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthLoginRequest'
+            example:
+              email: alvaro@example.com
+              password: "1234"
+      responses:
+        '200':
+          description: Autenticación correcta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/{id}:
+    get:
+      tags: [Profile]
+      summary: Obtener perfil del usuario autenticado
+      operationId: getUserProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        '200':
+          description: Perfil encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Usuario no encontrado
+
+  /users/{id}/profile:
+    put:
+      tags: [Profile]
+      summary: Actualizar nombre del perfil
+      operationId: updateUserProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdateRequest'
+            example:
+              name: Alvaro
+      responses:
+        '200':
+          description: Perfil actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /users/{id}/profile-image:
+    post:
+      tags: [Profile]
+      summary: Subir imagen de perfil
+      operationId: uploadUserProfileImage
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SingleFileUploadRequest'
+      responses:
+        '200':
+          description: Imagen de perfil actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /vehicles:
+    get:
+      tags: [Vehicles]
+      summary: Listar vehículos del usuario autenticado
+      operationId: listVehicles
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: userId
+          required: false
+          description: >
+            Si se envía, debe coincidir con el usuario autenticado; la app actual
+            lo envía siempre.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de vehículos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [Vehicles]
+      summary: Crear vehículo
+      operationId: createVehicle
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleCreateRequest'
+      responses:
+        '201':
+          description: Vehículo creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /vehicles/{id}:
+    get:
+      tags: [Vehicles]
+      summary: Obtener vehículo por id
+      operationId: getVehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VehicleIdPath'
+      responses:
+        '200':
+          description: Vehículo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Vehículo no encontrado
+
+    put:
+      tags: [Vehicles]
+      summary: Actualizar vehículo
+      operationId: updateVehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VehicleIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleUpdateRequest'
+      responses:
+        '200':
+          description: Vehículo actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+    delete:
+      tags: [Vehicles]
+      summary: Eliminar vehículo
+      operationId: deleteVehicle
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VehicleIdPath'
+      responses:
+        '204':
+          description: Vehículo eliminado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Vehículo no encontrado
+
+  /vehicles/{id}/image:
+    post:
+      tags: [Vehicles]
+      summary: Subir imagen del vehículo
+      operationId: uploadVehicleImage
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VehicleIdPath'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SingleFileUploadRequest'
+      responses:
+        '200':
+          description: Imagen del vehículo actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /vehicles/{vehicleId}/records:
+    get:
+      tags: [Maintenance]
+      summary: Listar mantenimientos de un vehículo
+      operationId: listMaintenanceRecords
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VehicleIdForRecordsPath'
+      responses:
+        '200':
+          description: Lista de registros
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceRecordResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Maintenance]
+      summary: Crear registro de mantenimiento
+      operationId: createMaintenanceRecord
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/VehicleIdForRecordsPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceRecordCreateRequest'
+      responses:
+        '201':
+          description: Registro creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceRecordResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /records/{id}:
+    get:
+      tags: [Maintenance]
+      summary: Obtener registro de mantenimiento
+      operationId: getMaintenanceRecord
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RecordIdPath'
+      responses:
+        '200':
+          description: Registro encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceRecordResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Registro no encontrado
+
+    put:
+      tags: [Maintenance]
+      summary: Actualizar registro de mantenimiento
+      operationId: updateMaintenanceRecord
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RecordIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaintenanceRecordUpdateRequest'
+      responses:
+        '200':
+          description: Registro actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceRecordResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Maintenance]
+      summary: Eliminar registro de mantenimiento
+      operationId: deleteMaintenanceRecord
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RecordIdPath'
+      responses:
+        '204':
+          description: Registro eliminado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Registro no encontrado
+
+  /records/{id}/attachments:
+    post:
+      tags: [Maintenance]
+      summary: Subir adjuntos a un registro
+      operationId: uploadMaintenanceAttachments
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RecordIdPath'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MultipleFilesUploadRequest'
+      responses:
+        '201':
+          description: Adjuntos subidos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachmentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /records/{recordId}/attachments/{attachmentId}/download:
+    get:
+      tags: [Maintenance]
+      summary: Descargar adjunto de un registro
+      operationId: downloadMaintenanceAttachment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RecordIdAttachmentPath'
+        - $ref: '#/components/parameters/AttachmentIdPath'
+      responses:
+        '200':
+          description: Fichero descargado
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /records/{recordId}/attachments/{attachmentId}:
+    delete:
+      tags: [Maintenance]
+      summary: Eliminar adjunto de un registro
+      operationId: deleteMaintenanceAttachment
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RecordIdAttachmentPath'
+        - $ref: '#/components/parameters/AttachmentIdPath'
+      responses:
+        '204':
+          description: Adjunto eliminado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /brands:
+    get:
+      tags: [Catalog]
+      summary: Listar marcas
+      operationId: listBrands
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - in: query
+          name: size
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Página de marcas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageBrandResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /brands/{id}/models:
+    get:
+      tags: [Catalog]
+      summary: Listar modelos por marca
+      operationId: listBrandModels
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - in: query
+          name: size
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Página de modelos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageModelResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /years:
+    get:
+      tags: [Catalog]
+      summary: Listar años disponibles
+      operationId: listYears
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista descendente desde el año actual hasta 1980
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                  format: int32
+              example: [2026, 2025, 2024, 2023]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /files/object:
+    get:
+      tags: [Files]
+      summary: Descargar o visualizar objeto público referenciado por clave
+      operationId: getFileObject
+      parameters:
+        - in: query
+          name: key
+          required: true
+          schema:
+            type: string
+          description: Clave del objeto almacenado en MinIO
+      responses:
+        '200':
+          description: Contenido binario del objeto
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Objeto no encontrado
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    UserIdPath:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+      description: Identificador del usuario
+    VehicleIdPath:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+      description: Identificador del vehículo
+    VehicleIdForRecordsPath:
+      in: path
+      name: vehicleId
+      required: true
+      schema:
+        type: string
+      description: Identificador del vehículo
+    RecordIdPath:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+      description: Identificador del registro de mantenimiento
+    RecordIdAttachmentPath:
+      in: path
+      name: recordId
+      required: true
+      schema:
+        type: string
+      description: Identificador del registro de mantenimiento
+    AttachmentIdPath:
+      in: path
+      name: attachmentId
+      required: true
+      schema:
+        type: string
+      description: Identificador del adjunto
+
+  responses:
+    BadRequest:
+      description: Solicitud inválida o error de validación
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            timestamp: '2026-05-10T10:00:00Z'
+            status: 400
+            error: Validación incorrecta
+            path: /vehicles
+            details:
+              - field: licensePlate
+                message: La matrícula debe tener formato español 1234ABC o 1234 ABC
+    Unauthorized:
+      description: No autenticado o token inválido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            timestamp: '2026-05-10T10:00:00Z'
+            status: 401
+            error: Unauthorized
+            path: /vehicles
+            details:
+              - field: authorization
+                message: Falta el token Bearer
+    Forbidden:
+      description: Acceso denegado por validación de ownership
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            timestamp: '2026-05-10T10:00:00Z'
+            status: 403
+            error: Acceso denegado
+            path: /users/other-user-id
+            details:
+              - field: general
+                message: No puedes acceder al perfil de otro usuario
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            timestamp: '2026-05-10T10:00:00Z'
+            status: 404
+            error: Recurso no encontrado
+            path: /records/rec-001
+            details:
+              - field: general
+                message: Recurso no encontrado
+    Conflict:
+      description: Conflicto de negocio
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            timestamp: '2026-05-10T10:00:00Z'
+            status: 409
+            error: Conflicto
+            path: /auth/register
+            details:
+              - field: general
+                message: El recurso ya existe
+
+  schemas:
+    AuthRegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 4
+
+    AuthLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 4
+
+    AuthResponse:
+      type: object
+      required: [id, name, email, createdAt, token]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        profileImageUrl:
+          type: string
+          format: uri
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        token:
+          type: string
+
+    UserProfileUpdateRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$
+
+    UserResponse:
+      type: object
+      required: [id, name, email, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        profileImageUrl:
+          type: string
+          format: uri
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    VehicleCreateRequest:
+      type: object
+      required: [userId, brand, model, year, licensePlate]
+      properties:
+        userId:
+          type: string
+        brand:
+          type: string
+          maxLength: 100
+        model:
+          type: string
+          maxLength: 100
+        year:
+          type: integer
+          minimum: 1900
+          maximum: 2100
+        licensePlate:
+          type: string
+          pattern: ^[0-9]{4}\s?[B-DF-HJ-NP-TV-Zb-df-hj-np-tv-z]{3}$
+        vin:
+          type: string
+          pattern: ^$|^[A-HJ-NPR-Z0-9]{17}$
+          nullable: true
+        currentKilometers:
+          type: integer
+          minimum: 0
+          nullable: true
+        fuelType:
+          type: string
+          enum: [Gasolina, Diésel, Híbrido, Eléctrico]
+          nullable: true
+
+    VehicleUpdateRequest:
+      type: object
+      required: [brand, model, year, licensePlate]
+      properties:
+        brand:
+          type: string
+          maxLength: 100
+        model:
+          type: string
+          maxLength: 100
+        year:
+          type: integer
+          minimum: 1900
+          maximum: 2100
+        licensePlate:
+          type: string
+          pattern: ^[0-9]{4}\s?[B-DF-HJ-NP-TV-Zb-df-hj-np-tv-z]{3}$
+        vin:
+          type: string
+          pattern: ^$|^[A-HJ-NPR-Z0-9]{17}$
+          nullable: true
+        currentKilometers:
+          type: integer
+          minimum: 0
+          nullable: true
+        fuelType:
+          type: string
+          enum: [Gasolina, Diésel, Híbrido, Eléctrico]
+          nullable: true
+
+    VehicleResponse:
+      type: object
+      required: [id, userId, brand, model, year, licensePlate]
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        brand:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        licensePlate:
+          type: string
+        vin:
+          type: string
+          nullable: true
+        currentKilometers:
+          type: integer
+          nullable: true
+        fuelType:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+
+    AttachmentRequest:
+      type: object
+      required: [fileName, fileType]
+      properties:
+        id:
+          type: string
+          nullable: true
+        fileName:
+          type: string
+          maxLength: 50
+        fileType:
+          type: string
+          maxLength: 120
+        filePath:
+          type: string
+          maxLength: 500
+          nullable: true
+
+    AttachmentResponse:
+      type: object
+      required: [id, fileName, fileType]
+      properties:
+        id:
+          type: string
+        fileName:
+          type: string
+        fileType:
+          type: string
+        filePath:
+          type: string
+          format: uri
+          nullable: true
+
+    MaintenanceRecordCreateRequest:
+      type: object
+      required: [title, date, category]
+      properties:
+        title:
+          type: string
+          maxLength: 150
+        date:
+          type: string
+          format: date
+        category:
+          type: string
+          description: Comparación case-insensitive en backend
+          enum: [Reparación, Mantenimiento, Mejora, Extra]
+        kilometers:
+          type: integer
+          minimum: 0
+          nullable: true
+        price:
+          type: number
+          format: double
+          minimum: 0
+          nullable: true
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+        attachments:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/AttachmentRequest'
+
+    MaintenanceRecordUpdateRequest:
+      type: object
+      required: [title, date, category]
+      properties:
+        title:
+          type: string
+          maxLength: 150
+        date:
+          type: string
+          format: date
+        category:
+          type: string
+          description: Comparación case-insensitive en backend
+          enum: [Reparación, Mantenimiento, Mejora, Extra]
+        kilometers:
+          type: integer
+          minimum: 0
+          nullable: true
+        price:
+          type: number
+          format: double
+          minimum: 0
+          nullable: true
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+        attachments:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/AttachmentRequest'
+
+    MaintenanceRecordResponse:
+      type: object
+      required: [id, vehicleId, title, date, category, attachments]
+      properties:
+        id:
+          type: string
+        vehicleId:
+          type: string
+        title:
+          type: string
+        date:
+          type: string
+          format: date
+        category:
+          type: string
+        kilometers:
+          type: integer
+          nullable: true
+        price:
+          type: number
+          format: double
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentResponse'
+
+    BrandResponse:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        logoUrl:
+          type: string
+          format: uri
+          nullable: true
+
+    ModelResponse:
+      type: object
+      required: [id, name, brandId]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        brandId:
+          type: string
+
+    PageBrandResponse:
+      type: object
+      required: [items, page, size, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BrandResponse'
+        page:
+          type: integer
+        size:
+          type: integer
+        total:
+          type: integer
+          format: int64
+
+    PageModelResponse:
+      type: object
+      required: [items, page, size, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModelResponse'
+        page:
+          type: integer
+        size:
+          type: integer
+        total:
+          type: integer
+          format: int64
+
+    SingleFileUploadRequest:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+
+    MultipleFilesUploadRequest:
+      type: object
+      required: [files]
+      properties:
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+
+    ApiError:
+      type: object
+      required: [timestamp, status, error, path, details]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiFieldError'
+
+    ApiFieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+        message:
+          type: string

@@ -1,13 +1,11 @@
 package com.vehiclecare.vehiclecaremicro.infrastructure.rest.controller;
 
 import com.vehiclecare.vehiclecaremicro.application.dto.request.UserProfileUpdateRequestDTO;
-import com.vehiclecare.vehiclecaremicro.application.dto.request.UserRequestDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.FileUploadResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.UserResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.service.MinioStorageService;
 import com.vehiclecare.vehiclecaremicro.application.service.PublicFileUrlService;
 import com.vehiclecare.vehiclecaremicro.domain.model.User;
-import com.vehiclecare.vehiclecaremicro.domain.port.in.CreateUserUseCase;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.UserRepositoryPort;
 import com.vehiclecare.vehiclecaremicro.infrastructure.mapper.UserMapper;
 import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.OwnershipAccessException;
@@ -15,7 +13,6 @@ import com.vehiclecare.vehiclecaremicro.infrastructure.security.AuthenticationCo
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,22 +31,11 @@ import org.springframework.web.multipart.MultipartFile;
 @Validated
 public class UserController {
 
-    private final CreateUserUseCase createUserUseCase;
     private final UserRepositoryPort userRepositoryPort;
     private final MinioStorageService minioStorageService;
     private final PublicFileUrlService publicFileUrlService;
     private final UserMapper userMapper;
     private final AuthenticationContext authenticationContext;
-
-    @PostMapping
-    public ResponseEntity<UserResponseDTO> createUser(
-            @Valid @RequestBody UserRequestDTO requestDTO,
-            HttpServletRequest request
-    ) {
-        User user = userMapper.toDomain(requestDTO);
-        User created = createUserUseCase.createUser(user);
-        return new ResponseEntity<>(toResponse(created, request), HttpStatus.CREATED);
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getById(@PathVariable("id") String id, HttpServletRequest request) {
