@@ -2,10 +2,8 @@ package com.vehiclecare.vehiclecaremicro.application.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vehiclecare.vehiclecaremicro.infrastructure.security.JwtAuthenticationException;
 import java.lang.reflect.Field;
@@ -173,8 +171,12 @@ class JwtServiceTest {
 
     @Test
     void generateToken_throwsWhenPayloadCannotBeSerialized() throws Exception {
-        ObjectMapper failingMapper = mock(ObjectMapper.class);
-        when(failingMapper.writeValueAsBytes(anyMap())).thenThrow(new RuntimeException("boom"));
+        ObjectMapper failingMapper = new ObjectMapper() {
+            @Override
+            public byte[] writeValueAsBytes(Object value) throws JsonProcessingException {
+                throw new JsonProcessingException("boom") { };
+            }
+        };
         JwtService failingService = new JwtService(failingMapper, SECRET, 3600);
 
         IllegalStateException ex = assertThrows(

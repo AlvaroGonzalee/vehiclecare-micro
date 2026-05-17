@@ -2,14 +2,14 @@ package com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
+import jakarta.validation.metadata.ConstraintDescriptor;
 import java.util.List;
+import java.util.Iterator;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,12 +44,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleConstraintViolation_returnsBadRequest() {
-        @SuppressWarnings("unchecked")
-        ConstraintViolation<Object> violation = mock(ConstraintViolation.class);
-        Path path = mock(Path.class);
-        when(path.toString()).thenReturn("price");
-        when(violation.getPropertyPath()).thenReturn(path);
-        when(violation.getMessage()).thenReturn("No válido");
+        ConstraintViolation<Object> violation = constraintViolation("price", "No válido");
         ConstraintViolationException ex = new ConstraintViolationException(Set.of(violation));
 
         var response = handler.handleConstraintViolation(ex, request());
@@ -112,5 +107,76 @@ class GlobalExceptionHandlerTest {
         request.setMethod("GET");
         request.setRequestURI("/test");
         return request;
+    }
+
+    private ConstraintViolation<Object> constraintViolation(String field, String message) {
+        Path propertyPath = new Path() {
+            @Override
+            public Iterator<Node> iterator() {
+                return List.<Node>of().iterator();
+            }
+
+            @Override
+            public String toString() {
+                return field;
+            }
+        };
+
+        return new ConstraintViolation<>() {
+            @Override
+            public String getMessage() {
+                return message;
+            }
+
+            @Override
+            public String getMessageTemplate() {
+                return message;
+            }
+
+            @Override
+            public Object getRootBean() {
+                return null;
+            }
+
+            @Override
+            public Class<Object> getRootBeanClass() {
+                return Object.class;
+            }
+
+            @Override
+            public Object getLeafBean() {
+                return null;
+            }
+
+            @Override
+            public Object[] getExecutableParameters() {
+                return new Object[0];
+            }
+
+            @Override
+            public Object getExecutableReturnValue() {
+                return null;
+            }
+
+            @Override
+            public Path getPropertyPath() {
+                return propertyPath;
+            }
+
+            @Override
+            public Object getInvalidValue() {
+                return null;
+            }
+
+            @Override
+            public ConstraintDescriptor<?> getConstraintDescriptor() {
+                return null;
+            }
+
+            @Override
+            public <U> U unwrap(Class<U> type) {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 }
