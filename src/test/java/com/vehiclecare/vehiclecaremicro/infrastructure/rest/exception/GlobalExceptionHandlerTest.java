@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.FieldError;
@@ -91,7 +92,10 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleInvalidJson_returnsBadRequest() {
-        var response = handler.handleInvalidJson(new HttpMessageNotReadableException("bad"), request());
+        var response = handler.handleInvalidJson(
+                new HttpMessageNotReadableException("bad", new MockHttpInputMessage(new byte[0])),
+                request()
+        );
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("body", response.getBody().getDetails().get(0).getField());
     }

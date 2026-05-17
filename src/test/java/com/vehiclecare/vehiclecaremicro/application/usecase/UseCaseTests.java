@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +37,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("unchecked")
 class UseCaseTests {
 
     @Nested
@@ -105,9 +107,9 @@ class UseCaseTests {
             user.setEmail("test@mail.com");
             user.setPassword("plain");
             when(userRepositoryPort.existsByEmail("test@mail.com")).thenReturn(false);
-            when(userRepositoryPort.findById(any())).thenReturn(Optional.empty());
+            when(userRepositoryPort.findById(anyString())).thenReturn(Optional.empty());
             when(passwordEncoder.encode("plain")).thenReturn("hashed");
-            when(userRepositoryPort.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepositoryPort.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0, User.class));
 
             User result = useCase.createUser(user);
 
@@ -124,7 +126,7 @@ class UseCaseTests {
             user.setPassword("plain");
             when(userRepositoryPort.existsByEmail("test@mail.com")).thenReturn(false);
             when(passwordEncoder.encode("plain")).thenReturn("hashed");
-            when(userRepositoryPort.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepositoryPort.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0, User.class));
 
             User result = useCase.createUser(user);
 
@@ -146,9 +148,9 @@ class UseCaseTests {
             user.setEmail("test@mail.com");
             user.setPassword("plain");
             when(userRepositoryPort.existsByEmail("test@mail.com")).thenReturn(false);
-            when(userRepositoryPort.findById(any())).thenReturn(Optional.of(new User()), Optional.empty());
+            when(userRepositoryPort.findById(anyString())).thenReturn(Optional.of(new User()), Optional.empty());
             when(passwordEncoder.encode("plain")).thenReturn("hashed");
-            when(userRepositoryPort.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepositoryPort.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0, User.class));
 
             User result = useCase.createUser(user);
 
@@ -163,9 +165,9 @@ class UseCaseTests {
             user.setEmail("test@mail.com");
             user.setPassword("plain");
             when(userRepositoryPort.existsByEmail("test@mail.com")).thenReturn(false);
-            when(userRepositoryPort.findById(any())).thenReturn(Optional.empty());
+            when(userRepositoryPort.findById(anyString())).thenReturn(Optional.empty());
             when(passwordEncoder.encode("plain")).thenReturn("hashed");
-            when(userRepositoryPort.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(userRepositoryPort.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0, User.class));
 
             User result = useCase.createUser(user);
 
@@ -190,7 +192,7 @@ class UseCaseTests {
         void createVehicle_savesVehicleForUser() {
             Vehicle vehicle = validVehicle();
             when(userRepositoryPort.findById("user-1")).thenReturn(Optional.of(new User()));
-            when(vehicleRepositoryPort.save(any(Vehicle.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(vehicleRepositoryPort.save(any(Vehicle.class))).thenAnswer(invocation -> invocation.getArgument(0, Vehicle.class));
 
             Vehicle result = useCase.createVehicle("user-1", vehicle);
 
@@ -204,7 +206,7 @@ class UseCaseTests {
             Vehicle vehicle = validVehicle();
             vehicle.setId("veh-1");
             when(userRepositoryPort.findById("user-1")).thenReturn(Optional.of(new User()));
-            when(vehicleRepositoryPort.save(any(Vehicle.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(vehicleRepositoryPort.save(any(Vehicle.class))).thenAnswer(invocation -> invocation.getArgument(0, Vehicle.class));
 
             Vehicle result = useCase.createVehicle("user-1", vehicle);
 
@@ -223,7 +225,7 @@ class UseCaseTests {
             Vehicle vehicle = validVehicle();
             vehicle.setId("   ");
             when(userRepositoryPort.findById("user-1")).thenReturn(Optional.of(new User()));
-            when(vehicleRepositoryPort.save(any(Vehicle.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(vehicleRepositoryPort.save(any(Vehicle.class))).thenAnswer(invocation -> invocation.getArgument(0, Vehicle.class));
 
             Vehicle result = useCase.createVehicle("user-1", vehicle);
 
@@ -381,7 +383,7 @@ class UseCaseTests {
         void addMaintenanceRecord_savesRecord() {
             MaintenanceRecord record = validRecord();
             when(vehicleRepositoryPort.findByIdAndUserId("veh-1", "user-1")).thenReturn(Optional.of(validVehicle()));
-            when(maintenanceRepositoryPort.save(any(MaintenanceRecord.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(maintenanceRepositoryPort.save(any(MaintenanceRecord.class))).thenAnswer(invocation -> invocation.getArgument(0, MaintenanceRecord.class));
 
             MaintenanceRecord result = useCase.addMaintenanceRecord("veh-1", "user-1", record);
 
@@ -395,7 +397,7 @@ class UseCaseTests {
             MaintenanceRecord record = validRecord();
             record.setId("rec-1");
             when(vehicleRepositoryPort.findByIdAndUserId("veh-1", "user-1")).thenReturn(Optional.of(validVehicle()));
-            when(maintenanceRepositoryPort.save(any(MaintenanceRecord.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(maintenanceRepositoryPort.save(any(MaintenanceRecord.class))).thenAnswer(invocation -> invocation.getArgument(0, MaintenanceRecord.class));
 
             MaintenanceRecord result = useCase.addMaintenanceRecord("veh-1", "user-1", record);
 
@@ -414,7 +416,7 @@ class UseCaseTests {
             MaintenanceRecord record = validRecord();
             record.setId("   ");
             when(vehicleRepositoryPort.findByIdAndUserId("veh-1", "user-1")).thenReturn(Optional.of(validVehicle()));
-            when(maintenanceRepositoryPort.save(any(MaintenanceRecord.class))).thenAnswer(invocation -> invocation.getArgument(0));
+            when(maintenanceRepositoryPort.save(any(MaintenanceRecord.class))).thenAnswer(invocation -> invocation.getArgument(0, MaintenanceRecord.class));
 
             MaintenanceRecord result = useCase.addMaintenanceRecord("veh-1", "user-1", record);
 
