@@ -20,8 +20,13 @@ public interface VehicleMapper {
     @Mapping(target = "vehicleYear", source = "year")
     VehicleEntity toEntity(Vehicle vehicle);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "imageUrl", ignore = true)
     Vehicle toDomain(VehicleCreateRequestDTO requestDTO);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "userId", ignore = true)
+    @Mapping(target = "imageUrl", ignore = true)
     Vehicle toDomain(VehicleUpdateRequestDTO requestDTO);
 
     VehicleResponseDTO toResponse(Vehicle vehicle);

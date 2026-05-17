@@ -19,8 +19,12 @@ public interface MaintenanceRecordMapper {
     @Mapping(target = "maintenanceDate", source = "date")
     MaintenanceRecordEntity toEntity(MaintenanceRecord maintenanceRecord);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "vehicleId", ignore = true)
     MaintenanceRecord toDomain(MaintenanceRecordCreateRequestDTO requestDTO);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "vehicleId", ignore = true)
     MaintenanceRecord toDomain(MaintenanceRecordUpdateRequestDTO requestDTO);
 
     MaintenanceRecordResponseDTO toResponse(MaintenanceRecord maintenanceRecord);

@@ -16,6 +16,7 @@ public interface AttachmentMapper {
     @Mapping(target = "maintenanceRecord", source = "maintenanceRecordId", qualifiedByName = "maintenanceRef")
     AttachmentEntity toEntity(Attachment attachment);
 
+    @Mapping(target = "maintenanceRecordId", ignore = true)
     Attachment toDomain(AttachmentRequestDTO requestDTO);
 
     AttachmentResponseDTO toResponse(Attachment attachment);
