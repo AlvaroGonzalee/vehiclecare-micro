@@ -7,6 +7,7 @@ import com.vehiclecare.vehiclecaremicro.domain.port.out.UserRepositoryPort;
 import com.vehiclecare.vehiclecaremicro.domain.port.out.VehicleRepositoryPort;
 import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CreateVehicleUseCaseImpl implements CreateVehicleUseCase {
 
     private final VehicleRepositoryPort vehicleRepositoryPort;
@@ -23,6 +25,8 @@ public class CreateVehicleUseCaseImpl implements CreateVehicleUseCase {
     @Override
     @Transactional
     public Vehicle createVehicle(String userId, Vehicle vehicle) {
+        log.info("Creating vehicle for userId={} brand={} model={} year={}",
+                userId, vehicle.getBrand(), vehicle.getModel(), vehicle.getYear());
         userRepositoryPort.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         vehicle.setUserId(userId);
@@ -30,6 +34,8 @@ public class CreateVehicleUseCaseImpl implements CreateVehicleUseCase {
         if (vehicle.getId() == null || vehicle.getId().isBlank()) {
             vehicle.setId(UUID.randomUUID().toString().replace("-", "").substring(0, 8));
         }
-        return vehicleRepositoryPort.save(vehicle);
+        Vehicle saved = vehicleRepositoryPort.save(vehicle);
+        log.info("Vehicle created successfully vehicleId={} userId={}", saved.getId(), userId);
+        return saved;
     }
 }

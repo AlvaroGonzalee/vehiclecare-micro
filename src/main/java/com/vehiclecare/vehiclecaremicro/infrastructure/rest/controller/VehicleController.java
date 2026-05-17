@@ -18,6 +18,7 @@ import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.OwnershipA
 import com.vehiclecare.vehiclecaremicro.infrastructure.security.AuthenticationContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,6 +40,7 @@ import java.util.List;
 @RequestMapping("/vehicles")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class VehicleController {
 
     private final CreateVehicleUseCase createVehicleUseCase;
@@ -58,7 +60,10 @@ public class VehicleController {
             HttpServletRequest request
     ) {
         String authenticatedUserId = authenticatedUserId(request);
+        log.info("List vehicles request queryUserId={} authenticatedUserId={}", userId, authenticatedUserId);
         if (userId != null && !userId.equals(authenticatedUserId)) {
+            log.warn("Ownership violation while listing vehicles queryUserId={} authenticatedUserId={}",
+                    userId, authenticatedUserId);
             throw new OwnershipAccessException("No puedes listar vehículos de otro usuario");
         }
 
@@ -66,11 +71,13 @@ public class VehicleController {
                 .stream()
                 .map(vehicle -> toResponse(vehicle, request))
                 .toList();
+        log.info("Vehicles listed count={} authenticatedUserId={}", vehicles.size(), authenticatedUserId);
         return ResponseEntity.ok(vehicles);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<VehicleResponseDTO> getVehicle(@PathVariable("id") String id, HttpServletRequest request) {
+        log.info("Get vehicle request vehicleId={} authenticatedUserId={}", id, authenticatedUserId(request));
         return getVehicleUseCase.getVehicleById(id, authenticatedUserId(request))
                 .map(vehicle -> toResponse(vehicle, request))
                 .map(ResponseEntity::ok)
@@ -83,11 +90,16 @@ public class VehicleController {
             HttpServletRequest request
     ) {
         String authenticatedUserId = authenticatedUserId(request);
+        log.info("Create vehicle request authenticatedUserId={} brand={} model={} year={}",
+                authenticatedUserId, requestDTO.getBrand(), requestDTO.getModel(), requestDTO.getYear());
         if (!requestDTO.getUserId().equals(authenticatedUserId)) {
+            log.warn("Ownership violation while creating vehicle requestUserId={} authenticatedUserId={}",
+                    requestDTO.getUserId(), authenticatedUserId);
             throw new OwnershipAccessException("No puedes crear vehículos para otro usuario");
         }
         Vehicle vehicle = vehicleMapper.toDomain(requestDTO);
         Vehicle created = createVehicleUseCase.createVehicle(authenticatedUserId, vehicle);
+        log.info("Vehicle created vehicleId={} authenticatedUserId={}", created.getId(), authenticatedUserId);
         return new ResponseEntity<>(toResponse(created, request), HttpStatus.CREATED);
     }
 
@@ -97,17 +109,23 @@ public class VehicleController {
             @Valid @RequestBody VehicleUpdateRequestDTO requestDTO,
             HttpServletRequest request
     ) {
+        log.info("Update vehicle request vehicleId={} authenticatedUserId={} year={} licensePlate={}",
+                id, authenticatedUserId(request), requestDTO.getYear(), requestDTO.getLicensePlate());
         Vehicle vehicle = vehicleMapper.toDomain(requestDTO);
         Vehicle updated = updateVehicleUseCase.updateVehicle(id, authenticatedUserId(request), vehicle);
+        log.info("Vehicle updated vehicleId={} authenticatedUserId={}", updated.getId(), authenticatedUserId(request));
         return ResponseEntity.ok(toResponse(updated, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVehicle(@PathVariable("id") String id, HttpServletRequest request) {
+        log.info("Delete vehicle request vehicleId={} authenticatedUserId={}", id, authenticatedUserId(request));
         boolean deleted = deleteVehicleUseCase.deleteVehicle(id, authenticatedUserId(request));
         if (!deleted) {
+            log.warn("Vehicle not found for deletion vehicleId={} authenticatedUserId={}", id, authenticatedUserId(request));
             return ResponseEntity.notFound().build();
         }
+        log.info("Vehicle deleted vehicleId={} authenticatedUserId={}", id, authenticatedUserId(request));
         return ResponseEntity.noContent().build();
     }
 
@@ -117,11 +135,14 @@ public class VehicleController {
             @RequestParam("file") MultipartFile file,
             HttpServletRequest request
     ) {
+        log.info("Upload vehicle image request vehicleId={} authenticatedUserId={} originalFileName={} size={}",
+                id, authenticatedUserId(request), file.getOriginalFilename(), file.getSize());
         Vehicle vehicle = vehicleRepositoryPort.findByIdAndUserId(id, authenticatedUserId(request))
                 .orElseThrow(() -> new IllegalArgumentException("Vehículo no encontrado"));
         FileUploadResponseDTO upload = minioStorageService.uploadImage(file, "vehicles/" + id);
         vehicle.setImageUrl(upload.getObjectKey());
         Vehicle saved = vehicleRepositoryPort.save(vehicle);
+        log.info("Vehicle image updated vehicleId={} objectKey={}", saved.getId(), upload.getObjectKey());
         return ResponseEntity.ok(toResponse(saved, request));
     }
 

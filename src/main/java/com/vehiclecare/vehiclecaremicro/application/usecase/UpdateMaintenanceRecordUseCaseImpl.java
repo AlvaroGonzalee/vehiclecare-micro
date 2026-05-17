@@ -8,11 +8,13 @@ import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.BusinessVa
 import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ResourceNotFoundException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UpdateMaintenanceRecordUseCaseImpl implements UpdateMaintenanceRecordUseCase {
 
     private final MaintenanceRepositoryPort maintenanceRepositoryPort;
@@ -20,10 +22,13 @@ public class UpdateMaintenanceRecordUseCaseImpl implements UpdateMaintenanceReco
     @Override
     @Transactional
     public MaintenanceRecord update(String recordId, String userId, MaintenanceRecord maintenanceRecord) {
+        log.info("Updating maintenance record recordId={} userId={}", recordId, userId);
         Optional<MaintenanceRecord> existingOptional = maintenanceRepositoryPort.findByIdAndUserId(recordId, userId);
         MaintenanceRecord existing = existingOptional.orElseThrow(() -> new ResourceNotFoundException("Registro no encontrado"));
 
         if (maintenanceRecord.getVehicleId() != null && !maintenanceRecord.getVehicleId().equals(existing.getVehicleId())) {
+            log.warn("Maintenance update rejected due to vehicle mismatch recordId={} existingVehicleId={} requestVehicleId={}",
+                    recordId, existing.getVehicleId(), maintenanceRecord.getVehicleId());
             throw new BusinessValidationException("El registro no pertenece al vehículo");
         }
 
@@ -34,6 +39,8 @@ public class UpdateMaintenanceRecordUseCaseImpl implements UpdateMaintenanceReco
         existing.setKilometers(maintenanceRecord.getKilometers());
         existing.setPrice(maintenanceRecord.getPrice());
         existing.setDescription(maintenanceRecord.getDescription());
-        return maintenanceRepositoryPort.save(existing);
+        MaintenanceRecord saved = maintenanceRepositoryPort.save(existing);
+        log.info("Maintenance record updated successfully recordId={} userId={}", saved.getId(), userId);
+        return saved;
     }
 }

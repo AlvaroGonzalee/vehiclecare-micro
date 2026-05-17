@@ -17,6 +17,7 @@ import com.vehiclecare.vehiclecaremicro.infrastructure.mapper.MaintenanceRecordM
 import com.vehiclecare.vehiclecaremicro.infrastructure.security.AuthenticationContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,7 @@ import java.util.List;
 @RequestMapping
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class MaintenanceRecordController {
 
     private final AddMaintenanceRecordUseCase addMaintenanceRecordUseCase;
@@ -61,6 +63,7 @@ public class MaintenanceRecordController {
             @PathVariable("vehicleId") String vehicleId,
             HttpServletRequest request
     ) {
+        log.info("List maintenance records request vehicleId={} authenticatedUserId={}", vehicleId, authenticatedUserId(request));
         List<MaintenanceRecordResponseDTO> records = listMaintenanceRecordsUseCase.listByVehicleId(
                         vehicleId,
                         authenticatedUserId(request)
@@ -68,11 +71,14 @@ public class MaintenanceRecordController {
                 .stream()
                 .map(record -> toResponse(record, request))
                 .toList();
+        log.info("Maintenance records listed vehicleId={} count={} authenticatedUserId={}",
+                vehicleId, records.size(), authenticatedUserId(request));
         return ResponseEntity.ok(records);
     }
 
     @GetMapping("/records/{id}")
     public ResponseEntity<MaintenanceRecordResponseDTO> getRecord(@PathVariable("id") String id, HttpServletRequest request) {
+        log.info("Get maintenance record request recordId={} authenticatedUserId={}", id, authenticatedUserId(request));
         return getMaintenanceRecordUseCase.getById(id, authenticatedUserId(request))
                 .map(record -> toResponse(record, request))
                 .map(ResponseEntity::ok)
@@ -85,12 +91,16 @@ public class MaintenanceRecordController {
             @Valid @RequestBody MaintenanceRecordCreateRequestDTO requestDTO,
             HttpServletRequest request
     ) {
+        log.info("Create maintenance record request vehicleId={} authenticatedUserId={} category={} date={}",
+                vehicleId, authenticatedUserId(request), requestDTO.getCategory(), requestDTO.getDate());
         MaintenanceRecord maintenance = maintenanceRecordMapper.toDomain(requestDTO);
         MaintenanceRecord created = addMaintenanceRecordUseCase.addMaintenanceRecord(
                 vehicleId,
                 authenticatedUserId(request),
                 maintenance
         );
+        log.info("Maintenance record created recordId={} vehicleId={} authenticatedUserId={}",
+                created.getId(), vehicleId, authenticatedUserId(request));
         return new ResponseEntity<>(toResponse(created, request), HttpStatus.CREATED);
     }
 
@@ -100,17 +110,23 @@ public class MaintenanceRecordController {
             @Valid @RequestBody MaintenanceRecordUpdateRequestDTO requestDTO,
             HttpServletRequest request
     ) {
+        log.info("Update maintenance record request recordId={} authenticatedUserId={} category={} date={}",
+                id, authenticatedUserId(request), requestDTO.getCategory(), requestDTO.getDate());
         MaintenanceRecord maintenance = maintenanceRecordMapper.toDomain(requestDTO);
         MaintenanceRecord updated = updateMaintenanceRecordUseCase.update(id, authenticatedUserId(request), maintenance);
+        log.info("Maintenance record updated recordId={} authenticatedUserId={}", updated.getId(), authenticatedUserId(request));
         return ResponseEntity.ok(toResponse(updated, request));
     }
 
     @DeleteMapping("/records/{id}")
     public ResponseEntity<Void> deleteRecord(@PathVariable("id") String id, HttpServletRequest request) {
+        log.info("Delete maintenance record request recordId={} authenticatedUserId={}", id, authenticatedUserId(request));
         boolean deleted = deleteMaintenanceRecordUseCase.delete(id, authenticatedUserId(request));
         if (!deleted) {
+            log.warn("Maintenance record not found for deletion recordId={} authenticatedUserId={}", id, authenticatedUserId(request));
             return ResponseEntity.notFound().build();
         }
+        log.info("Maintenance record deleted recordId={} authenticatedUserId={}", id, authenticatedUserId(request));
         return ResponseEntity.noContent().build();
     }
 
@@ -120,6 +136,8 @@ public class MaintenanceRecordController {
             @RequestParam("files") MultipartFile[] files,
             HttpServletRequest request
     ) {
+        log.info("Upload maintenance attachments request recordId={} authenticatedUserId={} filesCount={}",
+                id, authenticatedUserId(request), files == null ? 0 : files.length);
         List<AttachmentResponseDTO> attachments = maintenanceAttachmentService.upload(
                         id,
                         authenticatedUserId(request),
@@ -129,6 +147,8 @@ public class MaintenanceRecordController {
                 .map(attachmentMapper::toResponse)
                 .map(attachment -> toAttachmentResponse(attachment, request))
                 .toList();
+        log.info("Maintenance attachments uploaded recordId={} uploadedCount={} authenticatedUserId={}",
+                id, attachments.size(), authenticatedUserId(request));
         return new ResponseEntity<>(attachments, HttpStatus.CREATED);
     }
 
@@ -139,6 +159,8 @@ public class MaintenanceRecordController {
             HttpServletRequest request
     ) {
         String userId = authenticatedUserId(request);
+        log.info("Download maintenance attachment request recordId={} attachmentId={} authenticatedUserId={}",
+                recordId, attachmentId, userId);
         var attachment = maintenanceAttachmentService.getAttachment(recordId, attachmentId, userId);
         var stream = maintenanceAttachmentService.download(recordId, attachmentId, userId);
         String encodedName = URLEncoder.encode(attachment.getFileName(), StandardCharsets.UTF_8)
@@ -162,7 +184,11 @@ public class MaintenanceRecordController {
             @PathVariable("attachmentId") String attachmentId,
             HttpServletRequest request
     ) {
+        log.info("Delete maintenance attachment request recordId={} attachmentId={} authenticatedUserId={}",
+                recordId, attachmentId, authenticatedUserId(request));
         maintenanceAttachmentService.delete(recordId, attachmentId, authenticatedUserId(request));
+        log.info("Maintenance attachment deleted recordId={} attachmentId={} authenticatedUserId={}",
+                recordId, attachmentId, authenticatedUserId(request));
         return ResponseEntity.noContent().build();
     }
 

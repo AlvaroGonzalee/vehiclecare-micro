@@ -8,12 +8,14 @@ import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ConflictEx
 import java.util.Locale;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CreateUserUseCaseImpl implements CreateUserUseCase {
 
     private final UserRepositoryPort userRepositoryPort;
@@ -23,15 +25,19 @@ public class CreateUserUseCaseImpl implements CreateUserUseCase {
     @Override
     @Transactional
     public User createUser(User user) {
+        log.info("Creating user email={}", user.getEmail());
         validationService.normalizeAndValidateUser(user);
         if (userRepositoryPort.existsByEmail(user.getEmail())) {
+            log.warn("User creation rejected because email already exists email={}", user.getEmail());
             throw new ConflictException("Ya existe un usuario con ese email");
         }
         if (user.getId() == null || user.getId().isBlank()) {
             user.setId(generateId());
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepositoryPort.save(user);
+        User saved = userRepositoryPort.save(user);
+        log.info("User created successfully userId={} email={}", saved.getId(), saved.getEmail());
+        return saved;
     }
 
     private String generateId() {

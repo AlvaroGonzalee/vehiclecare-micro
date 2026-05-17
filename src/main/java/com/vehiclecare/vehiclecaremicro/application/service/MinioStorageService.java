@@ -16,12 +16,14 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MinioStorageService {
 
     private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
@@ -61,23 +63,30 @@ public class MinioStorageService {
     @PostConstruct
     public void initializeBucket() {
         if (!initializeBucketOnStartup) {
+            log.info("MinIO bucket initialization skipped bucket={}", bucketName);
             return;
         }
         try {
+            log.info("Checking MinIO bucket existence bucket={}", bucketName);
             boolean exists = minioClient.bucketExists(
                     BucketExistsArgs.builder().bucket(bucketName).build()
             );
             if (!exists) {
+                log.info("Creating MinIO bucket bucket={}", bucketName);
                 minioClient.makeBucket(
                         MakeBucketArgs.builder().bucket(bucketName).build()
                 );
             }
+            log.info("MinIO bucket ready bucket={}", bucketName);
         } catch (Exception ex) {
+            log.error("Failed to initialize MinIO bucket bucket={}", bucketName, ex);
             throw new IllegalStateException("No se pudo inicializar el bucket de MinIO", ex);
         }
     }
 
     public FileUploadResponseDTO uploadImage(MultipartFile file, String folder) {
+        log.info("Uploading image to MinIO folder={} originalFileName={} size={} contentType={}",
+                folder, file.getOriginalFilename(), file.getSize(), file.getContentType());
         validateImage(file);
         String objectKey = upload(file, folder, getExtension(file.getOriginalFilename(), file.getContentType()));
 
@@ -92,6 +101,8 @@ public class MinioStorageService {
     }
 
     public FileUploadResponseDTO uploadDocument(MultipartFile file, String folder) {
+        log.info("Uploading document to MinIO folder={} originalFileName={} size={} contentType={}",
+                folder, file.getOriginalFilename(), file.getSize(), file.getContentType());
         validateDocument(file);
         String extension = getExtension(file.getOriginalFilename(), file.getContentType());
         String contentType = resolveDocumentContentType(file.getContentType(), extension);
@@ -107,6 +118,7 @@ public class MinioStorageService {
 
     public InputStream download(String objectKey) {
         try {
+            log.info("Downloading object from MinIO objectKey={}", objectKey);
             return minioClient.getObject(
                     GetObjectArgs.builder()
                             .bucket(bucketName)
@@ -114,15 +126,18 @@ public class MinioStorageService {
                             .build()
             );
         } catch (Exception ex) {
+            log.error("Failed to download object from MinIO objectKey={}", objectKey, ex);
             throw new BusinessValidationException("No se pudo descargar el archivo");
         }
     }
 
     public void delete(String objectKey) {
         if (objectKey == null || objectKey.isBlank()) {
+            log.warn("Skipping MinIO delete because objectKey is blank");
             return;
         }
         try {
+            log.info("Deleting object from MinIO objectKey={}", objectKey);
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(bucketName)
@@ -130,6 +145,7 @@ public class MinioStorageService {
                             .build()
             );
         } catch (Exception ex) {
+            log.error("Failed to delete object from MinIO objectKey={}", objectKey, ex);
             throw new BusinessValidationException("No se pudo borrar el archivo");
         }
     }
@@ -187,10 +203,13 @@ public class MinioStorageService {
                             .contentType(contentType)
                             .build()
             );
+            log.info("Object uploaded to MinIO objectKey={} bucket={}", objectKey, bucketName);
             return objectKey;
         } catch (MinioException | IOException ex) {
+            log.error("MinIO upload failed objectKey={} bucket={}", objectKey, bucketName, ex);
             throw new BusinessValidationException("No se pudo subir el archivo a MinIO");
         } catch (Exception ex) {
+            log.error("Unexpected MinIO upload error objectKey={} bucket={}", objectKey, bucketName, ex);
             throw new BusinessValidationException("Error inesperado al subir el archivo");
         }
     }

@@ -8,11 +8,13 @@ import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.BusinessVa
 import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ResourceNotFoundException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UpdateVehicleUseCaseImpl implements UpdateVehicleUseCase {
 
     private final VehicleRepositoryPort vehicleRepositoryPort;
@@ -21,10 +23,13 @@ public class UpdateVehicleUseCaseImpl implements UpdateVehicleUseCase {
     @Override
     @Transactional
     public Vehicle updateVehicle(String vehicleId, String userId, Vehicle vehicle) {
+        log.info("Updating vehicle vehicleId={} userId={}", vehicleId, userId);
         Optional<Vehicle> existingOptional = vehicleRepositoryPort.findByIdAndUserId(vehicleId, userId);
         Vehicle existing = existingOptional.orElseThrow(() -> new ResourceNotFoundException("Vehículo no encontrado"));
 
         if (vehicle.getUserId() != null && !vehicle.getUserId().equals(existing.getUserId())) {
+            log.warn("Vehicle update rejected due to ownership mismatch vehicleId={} existingUserId={} requestUserId={}",
+                    vehicleId, existing.getUserId(), vehicle.getUserId());
             throw new BusinessValidationException("El vehículo no pertenece al usuario");
         }
 
@@ -37,6 +42,8 @@ public class UpdateVehicleUseCaseImpl implements UpdateVehicleUseCase {
         existing.setCurrentKilometers(vehicle.getCurrentKilometers());
         existing.setFuelType(vehicle.getFuelType());
 
-        return vehicleRepositoryPort.save(existing);
+        Vehicle saved = vehicleRepositoryPort.save(existing);
+        log.info("Vehicle updated successfully vehicleId={} userId={}", saved.getId(), userId);
+        return saved;
     }
 }

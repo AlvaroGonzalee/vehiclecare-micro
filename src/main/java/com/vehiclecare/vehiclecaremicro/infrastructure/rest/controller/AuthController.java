@@ -11,6 +11,7 @@ import com.vehiclecare.vehiclecaremicro.domain.port.in.CreateUserUseCase;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final CreateUserUseCase createUserUseCase;
@@ -33,11 +35,13 @@ public class AuthController {
             @Valid @RequestBody AuthRegisterRequestDTO requestDTO,
             HttpServletRequest request
     ) {
+        log.info("Register request received for email={}", requestDTO.getEmail());
         User user = new User();
         user.setName(requestDTO.getName());
         user.setEmail(requestDTO.getEmail());
         user.setPassword(requestDTO.getPassword());
         User created = createUserUseCase.createUser(user);
+        log.info("User registered successfully userId={} email={}", created.getId(), created.getEmail());
 
         AuthResponseDTO response = toAuthResponse(created, request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -48,7 +52,9 @@ public class AuthController {
             @Valid @RequestBody AuthLoginRequestDTO requestDTO,
             HttpServletRequest request
     ) {
+        log.info("Login request received for email={}", requestDTO.getEmail());
         User user = authenticateUserUseCase.authenticate(requestDTO.getEmail(), requestDTO.getPassword());
+        log.info("Login successful userId={} email={}", user.getId(), user.getEmail());
         AuthResponseDTO response = toAuthResponse(user, request);
         return ResponseEntity.ok(response);
     }

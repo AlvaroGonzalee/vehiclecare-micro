@@ -12,6 +12,7 @@ import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.OwnershipA
 import com.vehiclecare.vehiclecaremicro.infrastructure.security.AuthenticationContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class UserController {
 
     private final UserRepositoryPort userRepositoryPort;
@@ -39,6 +41,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getById(@PathVariable("id") String id, HttpServletRequest request) {
+        log.info("Get user profile request userId={}", id);
         ensureOwnership(id, request);
         return userRepositoryPort.findById(id)
                 .map(user -> toResponse(user, request))
@@ -52,11 +55,13 @@ public class UserController {
             @Valid @RequestBody UserProfileUpdateRequestDTO requestDTO,
             HttpServletRequest request
     ) {
+        log.info("Update user profile request userId={}", id);
         ensureOwnership(id, request);
         User existing = userRepositoryPort.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
         existing.setName(requestDTO.getName().trim());
         User saved = userRepositoryPort.save(existing);
+        log.info("User profile updated userId={}", saved.getId());
         return ResponseEntity.ok(toResponse(saved, request));
     }
 
@@ -66,12 +71,14 @@ public class UserController {
             @RequestParam("file") MultipartFile file,
             HttpServletRequest request
     ) {
+        log.info("Upload profile image request userId={} originalFileName={} size={}", id, file.getOriginalFilename(), file.getSize());
         ensureOwnership(id, request);
         User existing = userRepositoryPort.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
         FileUploadResponseDTO upload = minioStorageService.uploadImage(file, "profiles/" + id);
         existing.setProfileImageUrl(upload.getObjectKey());
         User saved = userRepositoryPort.save(existing);
+        log.info("Profile image updated userId={} objectKey={}", saved.getId(), upload.getObjectKey());
         return ResponseEntity.ok(toResponse(saved, request));
     }
 
@@ -86,6 +93,8 @@ public class UserController {
     private void ensureOwnership(String requestedUserId, HttpServletRequest request) {
         String authenticatedUserId = authenticationContext.requireCurrentUser(request).userId();
         if (!authenticatedUserId.equals(requestedUserId)) {
+            log.warn("Ownership violation on user profile requestedUserId={} authenticatedUserId={}",
+                    requestedUserId, authenticatedUserId);
             throw new OwnershipAccessException("No puedes acceder al perfil de otro usuario");
         }
     }

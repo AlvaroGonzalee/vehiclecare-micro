@@ -13,12 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MaintenanceAttachmentService {
 
     public static final String USER_ID_HEADER = "X-User-Id";
@@ -31,6 +33,8 @@ public class MaintenanceAttachmentService {
 
     @Transactional
     public List<Attachment> upload(String recordId, String userId, MultipartFile[] files) {
+        log.info("Uploading maintenance attachments recordId={} userId={} filesCount={}",
+                recordId, userId, files == null ? 0 : files.length);
         if (files == null || files.length == 0) {
             throw new BusinessValidationException("Debes adjuntar al menos un archivo");
         }
@@ -53,30 +57,41 @@ public class MaintenanceAttachmentService {
             AttachmentEntity saved = attachmentJpaRepository.save(entity);
             uploaded.add(attachmentMapper.toDomain(saved));
         }
+        log.info("Maintenance attachments uploaded recordId={} uploadedCount={} userId={}",
+                recordId, uploaded.size(), userId);
         return uploaded;
     }
 
     @Transactional(readOnly = true)
     public Attachment getAttachment(String recordId, String attachmentId, String userId) {
+        log.debug("Fetching maintenance attachment metadata recordId={} attachmentId={} userId={}",
+                recordId, attachmentId, userId);
         getOwnedRecord(recordId, userId);
         return attachmentMapper.toDomain(getRecordAttachment(recordId, attachmentId));
     }
 
     @Transactional(readOnly = true)
     public InputStream download(String recordId, String attachmentId, String userId) {
+        log.info("Downloading maintenance attachment recordId={} attachmentId={} userId={}",
+                recordId, attachmentId, userId);
         AttachmentEntity attachment = getAttachmentEntity(recordId, attachmentId, userId);
         return minioStorageService.download(attachment.getFilePath());
     }
 
     @Transactional
     public void delete(String recordId, String attachmentId, String userId) {
+        log.info("Deleting maintenance attachment recordId={} attachmentId={} userId={}",
+                recordId, attachmentId, userId);
         AttachmentEntity attachment = getAttachmentEntity(recordId, attachmentId, userId);
         minioStorageService.delete(attachment.getFilePath());
         attachmentJpaRepository.delete(attachment);
+        log.info("Maintenance attachment deleted recordId={} attachmentId={} userId={}",
+                recordId, attachmentId, userId);
     }
 
     @Transactional
     public void deleteAllFromRecord(String recordId) {
+        log.info("Deleting all attachments from recordId={}", recordId);
         maintenanceRecordJpaRepository.findById(recordId).ifPresent(record -> {
             if (record.getAttachments() == null) {
                 return;
@@ -99,6 +114,7 @@ public class MaintenanceAttachmentService {
 
     private MaintenanceRecordEntity getOwnedRecord(String recordId, String userId) {
         if (userId == null || userId.isBlank()) {
+            log.warn("Maintenance attachment access rejected due to missing userId recordId={}", recordId);
             throw new BusinessValidationException("El usuario es obligatorio");
         }
         return maintenanceRecordJpaRepository.findByIdAndVehicle_User_Id(recordId, userId)

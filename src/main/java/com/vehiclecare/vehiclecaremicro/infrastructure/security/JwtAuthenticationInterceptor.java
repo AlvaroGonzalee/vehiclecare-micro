@@ -12,8 +12,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class JwtAuthenticationInterceptor implements HandlerInterceptor {
 
     private final JwtService jwtService;
@@ -30,14 +32,17 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        log.debug("Authenticating request method={} path={}", request.getMethod(), request.getRequestURI());
         String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authorization == null || !authorization.startsWith("Bearer ")) {
+            log.warn("Missing or invalid Bearer token method={} path={}", request.getMethod(), request.getRequestURI());
             writeUnauthorized(request, response, "Falta el token Bearer");
             return false;
         }
 
         String token = authorization.substring(7).trim();
         if (token.isBlank()) {
+            log.warn("Empty Bearer token method={} path={}", request.getMethod(), request.getRequestURI());
             writeUnauthorized(request, response, "El token Bearer está vacío");
             return false;
         }
@@ -48,12 +53,15 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
             if (!userExists) {
                 throw new JwtAuthenticationException("El usuario del token ya no existe");
             }
+            log.info("Request authenticated method={} path={} userId={}", request.getMethod(), request.getRequestURI(), claims.userId());
             request.setAttribute(
                     AuthenticationContext.AUTHENTICATED_USER_ATTRIBUTE,
                     new AuthenticatedUser(claims.userId(), claims.email())
             );
             return true;
         } catch (JwtAuthenticationException ex) {
+            log.warn("JWT authentication failed method={} path={} reason={}",
+                    request.getMethod(), request.getRequestURI(), ex.getMessage());
             writeUnauthorized(request, response, ex.getMessage());
             return false;
         }

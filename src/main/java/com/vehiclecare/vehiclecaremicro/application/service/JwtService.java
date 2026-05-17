@@ -10,10 +10,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class JwtService {
 
     private static final String HMAC_SHA256 = "HmacSHA256";
@@ -36,6 +38,7 @@ public class JwtService {
     }
 
     public String generateToken(String userId, String email) {
+        log.debug("Generating JWT token userId={} email={}", userId, email);
         Instant now = Instant.now();
         Map<String, Object> header = Map.of(
                 "alg", "HS256",
@@ -55,6 +58,7 @@ public class JwtService {
     }
 
     public JwtClaims validateToken(String token) {
+        log.debug("Validating JWT token");
         String[] parts = token.split("\\.");
         if (parts.length != 3) {
             throw new JwtAuthenticationException("Token JWT inválido");
@@ -74,6 +78,7 @@ public class JwtService {
             throw new JwtAuthenticationException("Token JWT expirado");
         }
 
+        log.debug("JWT token validated userId={} email={} expiresAt={}", subject, email, expiration);
         return new JwtClaims(subject, email, expiration);
     }
 
