@@ -21,6 +21,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * Encapsulates file storage operations backed by MinIO.
+ *
+ * <p>This service validates uploaded content, generates sanitized object keys,
+ * initializes the target bucket when configured to do so and exposes a small API
+ * for uploading, downloading and deleting files. It is used by both vehicle image
+ * and maintenance attachment workflows.</p>
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -60,6 +68,9 @@ public class MinioStorageService {
     @Value("${minio.initialize-bucket:false}")
     private boolean initializeBucketOnStartup;
 
+    /**
+     * Ensures that the configured bucket exists when startup initialization is enabled.
+     */
     @PostConstruct
     public void initializeBucket() {
         if (!initializeBucketOnStartup) {
@@ -84,6 +95,13 @@ public class MinioStorageService {
         }
     }
 
+    /**
+     * Uploads an image after validating content type and file size constraints.
+     *
+     * @param file multipart image file
+     * @param folder logical folder prefix inside the bucket
+     * @return metadata about the stored object
+     */
     public FileUploadResponseDTO uploadImage(MultipartFile file, String folder) {
         log.info("Uploading image to MinIO folder={} originalFileName={} size={} contentType={}",
                 folder, file.getOriginalFilename(), file.getSize(), file.getContentType());
@@ -100,6 +118,13 @@ public class MinioStorageService {
         );
     }
 
+    /**
+     * Uploads a document or image attachment allowed by the maintenance module.
+     *
+     * @param file multipart document file
+     * @param folder logical folder prefix inside the bucket
+     * @return metadata about the stored object
+     */
     public FileUploadResponseDTO uploadDocument(MultipartFile file, String folder) {
         log.info("Uploading document to MinIO folder={} originalFileName={} size={} contentType={}",
                 folder, file.getOriginalFilename(), file.getSize(), file.getContentType());
@@ -116,6 +141,12 @@ public class MinioStorageService {
         );
     }
 
+    /**
+     * Downloads an object from MinIO.
+     *
+     * @param objectKey storage object key
+     * @return input stream for the object content
+     */
     public InputStream download(String objectKey) {
         try {
             log.info("Downloading object from MinIO objectKey={}", objectKey);
@@ -131,6 +162,11 @@ public class MinioStorageService {
         }
     }
 
+    /**
+     * Deletes an object from MinIO when the key is present.
+     *
+     * @param objectKey storage object key
+     */
     public void delete(String objectKey) {
         if (objectKey == null || objectKey.isBlank()) {
             log.warn("Skipping MinIO delete because objectKey is blank");

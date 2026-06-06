@@ -11,6 +11,13 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Persistence adapter that bridges the vehicle repository port with Spring Data JPA.
+ *
+ * <p>The adapter converts between the domain {@link Vehicle} model and the JPA
+ * {@link VehicleEntity} representation. It keeps the application layer isolated from
+ * persistence details while delegating actual data access to {@link VehicleJpaRepository}.</p>
+ */
 @Component
 @RequiredArgsConstructor
 public class VehiclePersistenceAdapter implements VehicleRepositoryPort {

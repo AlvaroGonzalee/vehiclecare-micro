@@ -40,6 +40,14 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+/**
+ * REST controller for vehicle maintenance records and their attachments.
+ *
+ * <p>This controller exposes CRUD operations for maintenance records, plus upload,
+ * download and deletion endpoints for related attachments. All endpoints operate in
+ * the context of the authenticated user and delegate business rules to application
+ * services and use cases.</p>
+ */
 @RestController
 @RequestMapping
 @RequiredArgsConstructor

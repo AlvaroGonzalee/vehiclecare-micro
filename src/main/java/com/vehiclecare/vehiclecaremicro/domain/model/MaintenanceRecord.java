@@ -9,6 +9,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Domain model describing a maintenance event associated with a vehicle.
+ *
+ * <p>A maintenance record stores both operational and financial information about
+ * a service action, such as when it happened, the category, odometer value, price
+ * and optional supporting attachments. The object is intentionally free from
+ * infrastructure concerns so it can flow across use cases and adapters.</p>
+ */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -13,6 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+/**
+ * Application service that creates vehicles for an existing user.
+ *
+ * <p>The implementation verifies that the owner exists, assigns ownership to the
+ * new vehicle, delegates normalization and validation to the shared validation service
+ * and finally persists the vehicle through the outbound repository port.</p>
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -22,6 +29,13 @@ public class CreateVehicleUseCaseImpl implements CreateVehicleUseCase {
     private final UserRepositoryPort userRepositoryPort;
     private final ValidationService validationService;
 
+    /**
+     * Creates and persists a vehicle for the given user.
+     *
+     * @param userId identifier of the owning user
+     * @param vehicle vehicle data to create
+     * @return persisted vehicle with its generated identifier when needed
+     */
     @Override
     @Transactional
     public Vehicle createVehicle(String userId, Vehicle vehicle) {

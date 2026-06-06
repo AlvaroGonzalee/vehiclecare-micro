@@ -14,6 +14,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Servlet interceptor that enforces JWT-based authentication for protected requests.
+ *
+ * <p>The interceptor extracts the Bearer token from the {@code Authorization} header,
+ * validates it through {@link JwtService}, verifies that the referenced user still
+ * exists and stores the authenticated principal in the current request for later
+ * retrieval by controllers and other infrastructure components.</p>
+ */
 @Component
 @Slf4j
 public class JwtAuthenticationInterceptor implements HandlerInterceptor {
@@ -26,6 +34,15 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
         this.userRepositoryPort = userRepositoryPort;
     }
 
+    /**
+     * Authenticates the current request before it reaches the controller layer.
+     *
+     * @param request current HTTP request
+     * @param response current HTTP response
+     * @param handler selected handler
+     * @return {@code true} when the request is authenticated, {@code false} otherwise
+     * @throws IOException if the unauthorized response cannot be written
+     */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
         if (HttpMethod.OPTIONS.matches(request.getMethod())) {

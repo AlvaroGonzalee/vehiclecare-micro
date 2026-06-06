@@ -36,6 +36,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+/**
+ * REST controller exposing vehicle management endpoints.
+ *
+ * <p>The controller acts as the HTTP entry point for listing, creating, updating,
+ * deleting and uploading images for vehicles. It delegates business logic to use cases,
+ * enforces ownership based on the authenticated user and converts domain objects into
+ * response DTOs enriched with public file URLs.</p>
+ */
 @RestController
 @RequestMapping("/vehicles")
 @RequiredArgsConstructor
@@ -54,6 +62,13 @@ public class VehicleController {
     private final VehicleMapper vehicleMapper;
     private final AuthenticationContext authenticationContext;
 
+    /**
+     * Lists vehicles belonging to the authenticated user.
+     *
+     * @param userId optional query parameter that must match the authenticated user
+     * @param request current HTTP request
+     * @return vehicles owned by the authenticated user
+     */
     @GetMapping
     public ResponseEntity<List<VehicleResponseDTO>> listVehicles(
             @RequestParam(value = "userId", required = false) String userId,
@@ -75,6 +90,13 @@ public class VehicleController {
         return ResponseEntity.ok(vehicles);
     }
 
+    /**
+     * Retrieves a single vehicle owned by the authenticated user.
+     *
+     * @param id vehicle identifier
+     * @param request current HTTP request
+     * @return vehicle response or {@code 404} when it does not exist
+     */
     @GetMapping("/{id}")
     public ResponseEntity<VehicleResponseDTO> getVehicle(@PathVariable("id") String id, HttpServletRequest request) {
         log.info("Get vehicle request vehicleId={} authenticatedUserId={}", id, authenticatedUserId(request));
@@ -84,6 +106,13 @@ public class VehicleController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    /**
+     * Creates a vehicle for the authenticated user.
+     *
+     * @param requestDTO vehicle payload received from the client
+     * @param request current HTTP request
+     * @return created vehicle response
+     */
     @PostMapping
     public ResponseEntity<VehicleResponseDTO> createVehicle(
             @Valid @RequestBody VehicleCreateRequestDTO requestDTO,
@@ -103,6 +132,14 @@ public class VehicleController {
         return new ResponseEntity<>(toResponse(created, request), HttpStatus.CREATED);
     }
 
+    /**
+     * Updates a vehicle owned by the authenticated user.
+     *
+     * @param id vehicle identifier
+     * @param requestDTO update payload
+     * @param request current HTTP request
+     * @return updated vehicle response
+     */
     @PutMapping("/{id}")
     public ResponseEntity<VehicleResponseDTO> updateVehicle(
             @PathVariable("id") String id,
@@ -117,6 +154,13 @@ public class VehicleController {
         return ResponseEntity.ok(toResponse(updated, request));
     }
 
+    /**
+     * Deletes a vehicle owned by the authenticated user.
+     *
+     * @param id vehicle identifier
+     * @param request current HTTP request
+     * @return {@code 204} when deleted or {@code 404} when missing
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVehicle(@PathVariable("id") String id, HttpServletRequest request) {
         log.info("Delete vehicle request vehicleId={} authenticatedUserId={}", id, authenticatedUserId(request));
@@ -129,6 +173,14 @@ public class VehicleController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Uploads or replaces the image associated with a vehicle.
+     *
+     * @param id vehicle identifier
+     * @param file multipart image file
+     * @param request current HTTP request
+     * @return vehicle response containing the stored image URL
+     */
     @PostMapping("/{id}/image")
     public ResponseEntity<VehicleResponseDTO> uploadVehicleImage(
             @PathVariable("id") String id,

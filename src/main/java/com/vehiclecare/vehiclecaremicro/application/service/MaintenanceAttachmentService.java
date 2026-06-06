@@ -18,6 +18,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * Manages file attachments linked to maintenance records.
+ *
+ * <p>This service coordinates ownership checks, repository access, object storage
+ * operations and attachment mapping. It enforces attachment-specific business rules,
+ * such as the maximum number of files allowed per maintenance record, and ensures
+ * that only the owner of the related vehicle can access or modify those files.</p>
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -31,6 +39,14 @@ public class MaintenanceAttachmentService {
     private final AttachmentMapper attachmentMapper;
     private final MinioStorageService minioStorageService;
 
+    /**
+     * Uploads one or more attachments for a maintenance record owned by the given user.
+     *
+     * @param recordId maintenance record identifier
+     * @param userId owner of the record
+     * @param files files to upload
+     * @return uploaded attachments mapped to the domain model
+     */
     @Transactional
     public List<Attachment> upload(String recordId, String userId, MultipartFile[] files) {
         log.info("Uploading maintenance attachments recordId={} userId={} filesCount={}",
@@ -62,6 +78,14 @@ public class MaintenanceAttachmentService {
         return uploaded;
     }
 
+    /**
+     * Retrieves attachment metadata after verifying record ownership.
+     *
+     * @param recordId maintenance record identifier
+     * @param attachmentId attachment identifier
+     * @param userId owner of the record
+     * @return attachment metadata
+     */
     @Transactional(readOnly = true)
     public Attachment getAttachment(String recordId, String attachmentId, String userId) {
         log.debug("Fetching maintenance attachment metadata recordId={} attachmentId={} userId={}",
@@ -70,6 +94,14 @@ public class MaintenanceAttachmentService {
         return attachmentMapper.toDomain(getRecordAttachment(recordId, attachmentId));
     }
 
+    /**
+     * Opens a stream to download a stored attachment after authorization checks.
+     *
+     * @param recordId maintenance record identifier
+     * @param attachmentId attachment identifier
+     * @param userId owner of the record
+     * @return input stream for the stored file
+     */
     @Transactional(readOnly = true)
     public InputStream download(String recordId, String attachmentId, String userId) {
         log.info("Downloading maintenance attachment recordId={} attachmentId={} userId={}",
@@ -78,6 +110,13 @@ public class MaintenanceAttachmentService {
         return minioStorageService.download(attachment.getFilePath());
     }
 
+    /**
+     * Deletes a single attachment from both object storage and the relational database.
+     *
+     * @param recordId maintenance record identifier
+     * @param attachmentId attachment identifier
+     * @param userId owner of the record
+     */
     @Transactional
     public void delete(String recordId, String attachmentId, String userId) {
         log.info("Deleting maintenance attachment recordId={} attachmentId={} userId={}",
@@ -89,6 +128,14 @@ public class MaintenanceAttachmentService {
                 recordId, attachmentId, userId);
     }
 
+    /**
+     * Deletes all files currently associated with a maintenance record.
+     *
+     * <p>This method is intended for cascading cleanup scenarios where the parent
+     * maintenance record is being removed or rebuilt.</p>
+     *
+     * @param recordId maintenance record identifier
+     */
     @Transactional
     public void deleteAllFromRecord(String recordId) {
         log.info("Deleting all attachments from recordId={}", recordId);

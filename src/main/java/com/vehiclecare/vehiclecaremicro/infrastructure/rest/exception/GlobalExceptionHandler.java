@@ -14,6 +14,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * Translates application and framework exceptions into consistent API error responses.
+ *
+ * <p>The handler centralizes HTTP status mapping, structured error payload creation
+ * and server-side logging. This keeps controllers focused on business flow while ensuring
+ * clients receive predictable error shapes for validation, authentication, authorization
+ * and unexpected failures.</p>
+ */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {

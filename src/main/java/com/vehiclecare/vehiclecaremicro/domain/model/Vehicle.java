@@ -6,6 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Domain representation of a vehicle owned by a user.
+ *
+ * <p>A {@code Vehicle} contains the identifying and descriptive data required by the
+ * business layer to manage a user's fleet, including ownership, registration details,
+ * technical attributes and the current odometer reading. The model is persistence-agnostic
+ * and is shared across use cases, controllers and repository ports.</p>
+ */
 @Getter
 @Setter
 @NoArgsConstructor

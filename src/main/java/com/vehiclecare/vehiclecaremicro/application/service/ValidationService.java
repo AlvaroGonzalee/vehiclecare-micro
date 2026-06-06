@@ -8,6 +8,15 @@ import java.time.Year;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
 
+/**
+ * Centralizes normalization and business validation for domain objects before persistence.
+ *
+ * <p>This service applies a consistent set of rules to user, vehicle and maintenance
+ * data. Besides validating mandatory fields and value ranges, it also normalizes
+ * input such as trimming whitespace, formatting license plates and lower-casing emails.
+ * The goal is to keep use cases lean while enforcing the same invariants across
+ * every write operation.</p>
+ */
 @Service
 public class ValidationService {
 
@@ -17,11 +26,23 @@ public class ValidationService {
     private static final String LICENSE_PLATE_PATTERN = "^[0-9]{4} [B-DF-HJ-NP-TV-Z]{3}$";
     private static final String VIN_PATTERN = "^[A-HJ-NPR-Z0-9]{17}$";
 
+    /**
+     * Normalizes and validates user data before it is processed by a use case.
+     *
+     * @param user user to normalize and validate
+     * @throws IllegalArgumentException if the user data violates business rules
+     */
     public void normalizeAndValidateUser(User user) {
         user.setName(normalizeName(user.getName()));
         user.setEmail(normalizeEmail(user.getEmail()));
     }
 
+    /**
+     * Normalizes and validates vehicle data before creation or update.
+     *
+     * @param vehicle vehicle to normalize and validate
+     * @throws IllegalArgumentException if the vehicle data violates business rules
+     */
     public void normalizeAndValidateVehicle(Vehicle vehicle) {
         vehicle.setBrand(trimToNull(vehicle.getBrand()));
         vehicle.setModel(trimToNull(vehicle.getModel()));
@@ -33,6 +54,12 @@ public class ValidationService {
         validateKilometers(vehicle.getCurrentKilometers(), "Los kilómetros actuales no pueden ser negativos");
     }
 
+    /**
+     * Normalizes and validates maintenance record data before persistence.
+     *
+     * @param maintenanceRecord maintenance record to normalize and validate
+     * @throws IllegalArgumentException if the maintenance data violates business rules
+     */
     public void normalizeAndValidateMaintenance(MaintenanceRecord maintenanceRecord) {
         maintenanceRecord.setTitle(trimToNull(maintenanceRecord.getTitle()));
         maintenanceRecord.setCategory(normalizeCategory(maintenanceRecord.getCategory()));

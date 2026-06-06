@@ -14,6 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * Provides JWT creation and validation without relying on an external security library.
+ *
+ * <p>The service generates HS256-signed tokens containing the authenticated user's
+ * identifier and email, and validates incoming tokens by checking structure, signature
+ * and expiration claims. It acts as the core token component used by the authentication
+ * endpoints and the request interceptor.</p>
+ */
 @Service
 @Slf4j
 public class JwtService {
@@ -37,6 +45,13 @@ public class JwtService {
         this.expirationSeconds = expirationSeconds;
     }
 
+    /**
+     * Generates a signed JWT for the given user.
+     *
+     * @param userId unique user identifier stored as the subject claim
+     * @param email normalized user email stored as a custom claim
+     * @return compact JWT string
+     */
     public String generateToken(String userId, String email) {
         log.debug("Generating JWT token userId={} email={}", userId, email);
         Instant now = Instant.now();
@@ -57,6 +72,13 @@ public class JwtService {
         return content + "." + sign(content);
     }
 
+    /**
+     * Validates a JWT and extracts the claims required by the application.
+     *
+     * @param token compact JWT string received from the client
+     * @return validated claim set
+     * @throws JwtAuthenticationException if the token is malformed, invalid or expired
+     */
     public JwtClaims validateToken(String token) {
         log.debug("Validating JWT token");
         String[] parts = token.split("\\.");
@@ -132,6 +154,13 @@ public class JwtService {
         }
     }
 
+    /**
+     * Immutable view of the JWT claims consumed by the application layer.
+     *
+     * @param userId authenticated user identifier
+     * @param email authenticated user email
+     * @param expiresAt expiration instant as epoch seconds
+     */
     public record JwtClaims(String userId, String email, long expiresAt) {
     }
 }
