@@ -106,7 +106,7 @@ public class ValidationService {
 
         String compact = value.toUpperCase(Locale.ROOT).replaceAll("\\s+", "");
         if (!compact.matches("^[0-9]{4}[B-DF-HJ-NP-TV-Z]{3}$")) {
-            throw new IllegalArgumentException("La matrícula debe tener formato español 1234 ABC");
+            throw new IllegalArgumentException("La matrícula debe tener formato español 1234 BCD, sin vocales.");
         }
         return compact.substring(0, 4) + " " + compact.substring(4);
     }
@@ -159,7 +159,7 @@ public class ValidationService {
         }
         int maxYear = Year.now().getValue() + 1;
         if (year < MIN_YEAR || year > maxYear) {
-            throw new IllegalArgumentException("El año debe estar entre 1900 y " + maxYear);
+            throw new IllegalArgumentException("El año debe estar entre 1900 y " + maxYear + ".");
         }
     }
 

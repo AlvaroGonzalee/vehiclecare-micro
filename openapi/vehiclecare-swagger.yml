@@ -575,27 +575,6 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /years:
-    get:
-      tags: [Catalog]
-      summary: Listar años disponibles
-      operationId: listYears
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Lista descendente desde el año actual hasta 1980
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: integer
-                  format: int32
-              example: [2026, 2025, 2024, 2023]
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
   /files/object:
     get:
       tags: [Files]
@@ -684,7 +663,7 @@ components:
             path: /vehicles
             details:
               - field: licensePlate
-                message: La matrícula debe tener formato español 1234ABC o 1234 ABC
+                message: La matrícula debe tener formato español 1234 BCD, sin vocales.
     Unauthorized:
       description: No autenticado o token inválido
       content:
@@ -836,7 +815,7 @@ components:
         year:
           type: integer
           minimum: 1900
-          maximum: 2100
+          description: Debe estar entre 1900 y el año actual + 1
         licensePlate:
           type: string
           pattern: ^[0-9]{4}\s?[B-DF-HJ-NP-TV-Zb-df-hj-np-tv-z]{3}$
@@ -866,7 +845,7 @@ components:
         year:
           type: integer
           minimum: 1900
-          maximum: 2100
+          description: Debe estar entre 1900 y el año actual + 1
         licensePlate:
           type: string
           pattern: ^[0-9]{4}\s?[B-DF-HJ-NP-TV-Zb-df-hj-np-tv-z]{3}$

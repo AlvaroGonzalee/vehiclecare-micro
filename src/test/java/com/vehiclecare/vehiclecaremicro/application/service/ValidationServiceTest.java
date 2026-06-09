@@ -138,7 +138,7 @@ class ValidationServiceTest {
                 () -> validationService.normalizeAndValidateVehicle(vehicle)
         );
 
-        assertEquals("La matrícula debe tener formato español 1234 ABC", ex.getMessage());
+        assertEquals("La matrícula debe tener formato español 1234 BCD, sin vocales.", ex.getMessage());
     }
 
     @Test
@@ -219,7 +219,7 @@ class ValidationServiceTest {
                 () -> validationService.normalizeAndValidateVehicle(vehicle)
         );
 
-        assertEquals("El año debe estar entre 1900 y " + (LocalDate.now().getYear() + 1), ex.getMessage());
+        assertEquals("El año debe estar entre 1900 y " + (LocalDate.now().getYear() + 1) + ".", ex.getMessage());
     }
 
     @Test
@@ -235,7 +235,7 @@ class ValidationServiceTest {
                 () -> validationService.normalizeAndValidateVehicle(vehicle)
         );
 
-        assertEquals("El año debe estar entre 1900 y " + (LocalDate.now().getYear() + 1), ex.getMessage());
+        assertEquals("El año debe estar entre 1900 y " + (LocalDate.now().getYear() + 1) + ".", ex.getMessage());
     }
 
     @Test

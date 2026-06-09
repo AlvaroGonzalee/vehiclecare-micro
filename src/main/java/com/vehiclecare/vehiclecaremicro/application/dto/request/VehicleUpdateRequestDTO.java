@@ -1,7 +1,5 @@
 package com.vehiclecare.vehiclecaremicro.application.dto.request;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -24,14 +22,12 @@ public class VehicleUpdateRequestDTO {
     private String model;
 
     @NotNull(message = "El año es obligatorio")
-    @Min(value = 1900, message = "El año debe ser posterior a 1900")
-    @Max(value = 2100, message = "El año no puede ser tan alto")
     private Integer year;
 
     @NotBlank(message = "La matrícula es obligatoria")
     @Pattern(
             regexp = "^[0-9]{4}\\s?[B-DF-HJ-NP-TV-Zb-df-hj-np-tv-z]{3}$",
-            message = "La matrícula debe tener formato español 1234ABC o 1234 ABC"
+            message = "La matrícula debe tener formato español 1234 BCD, sin vocales."
     )
     private String licensePlate;
 

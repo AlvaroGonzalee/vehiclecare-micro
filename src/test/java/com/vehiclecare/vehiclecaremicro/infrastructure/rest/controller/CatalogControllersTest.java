@@ -9,7 +9,6 @@ import com.vehiclecare.vehiclecaremicro.application.dto.response.ModelResponseDT
 import com.vehiclecare.vehiclecaremicro.application.dto.response.PageResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.service.CatalogQueryService;
 import com.vehiclecare.vehiclecaremicro.application.service.CatalogSyncService;
-import java.time.Year;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,16 +59,5 @@ class CatalogControllersTest {
 
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         verify(catalogSyncService).syncCatalog();
-    }
-
-    @Test
-    void listYears_returnsDescendingYearsUntilStartYear() {
-        YearsController controller = new YearsController();
-
-        var response = controller.listYears();
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(Year.now().getValue(), response.getBody().get(0));
-        assertEquals(1980, response.getBody().get(response.getBody().size() - 1));
     }
 }
