@@ -14,6 +14,7 @@ tags:
   - name: Vehicles
   - name: Maintenance
   - name: Catalog
+  - name: Admin
   - name: Files
 paths:
   /auth/register:
@@ -575,6 +576,40 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /admin/catalog/sync:
+    post:
+      tags: [Admin]
+      summary: Lanzar sincronización manual del catálogo
+      operationId: syncCatalog
+      security:
+        - bearerAuth: []
+      responses:
+        '202':
+          description: Sincronización aceptada
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /files/upload-image:
+    post:
+      tags: [Files]
+      summary: Subir imagen genérica al almacenamiento
+      operationId: uploadImage
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FileImageUploadRequest'
+      responses:
+        '201':
+          description: Imagen subida correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
   /files/object:
     get:
       tags: [Files]
@@ -586,7 +621,7 @@ paths:
           required: true
           schema:
             type: string
-          description: Clave del objeto almacenado en MinIO
+          description: Clave del objeto almacenado en MinIO o URL pública generada por el backend
       responses:
         '200':
           description: Contenido binario del objeto
@@ -819,6 +854,7 @@ components:
         licensePlate:
           type: string
           pattern: ^[0-9]{4}\s?[B-DF-HJ-NP-TV-Zb-df-hj-np-tv-z]{3}$
+          description: Formato español tipo 1234 BCD, sin vocales
         vin:
           type: string
           pattern: ^$|^[A-HJ-NPR-Z0-9]{17}$
@@ -849,6 +885,7 @@ components:
         licensePlate:
           type: string
           pattern: ^[0-9]{4}\s?[B-DF-HJ-NP-TV-Zb-df-hj-np-tv-z]{3}$
+          description: Formato español tipo 1234 BCD, sin vocales
         vin:
           type: string
           pattern: ^$|^[A-HJ-NPR-Z0-9]{17}$
@@ -1077,6 +1114,25 @@ components:
           type: integer
           format: int64
 
+    FileUploadResponse:
+      type: object
+      required: [fileName, contentType, size, objectKey]
+      properties:
+        fileName:
+          type: string
+        contentType:
+          type: string
+          nullable: true
+        size:
+          type: integer
+          format: int64
+        objectKey:
+          type: string
+        objectUrl:
+          type: string
+          format: uri
+          nullable: true
+
     SingleFileUploadRequest:
       type: object
       required: [file]
@@ -1084,6 +1140,18 @@ components:
         file:
           type: string
           format: binary
+
+    FileImageUploadRequest:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+        folder:
+          type: string
+          default: uploads
+          description: Carpeta lógica dentro del bucket donde se guardará la imagen
 
     MultipleFilesUploadRequest:
       type: object
