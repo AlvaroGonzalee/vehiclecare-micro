@@ -1,14 +1,11 @@
 package com.vehiclecare.vehiclecaremicro.application.service;
 
-import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.entity.AttachmentEntity;
-import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.entity.MaintenanceRecordEntity;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.entity.UserEntity;
-import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.entity.VehicleEntity;
+import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.repository.AttachmentJpaRepository;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.repository.MaintenanceRecordJpaRepository;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.repository.UserJpaRepository;
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.repository.VehicleJpaRepository;
 import com.vehiclecare.vehiclecaremicro.infrastructure.rest.exception.ResourceNotFoundException;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,6 +19,7 @@ public class AdminUserManagementService {
     private final UserJpaRepository userJpaRepository;
     private final VehicleJpaRepository vehicleJpaRepository;
     private final MaintenanceRecordJpaRepository maintenanceRecordJpaRepository;
+    private final AttachmentJpaRepository attachmentJpaRepository;
     private final MinioStorageService minioStorageService;
 
     @Transactional
@@ -32,18 +30,13 @@ public class AdminUserManagementService {
         log.info("Deleting user from admin panel userId={}", userId);
         minioStorageService.delete(user.getProfileImageUrl());
 
-        List<VehicleEntity> vehicles = vehicleJpaRepository.findByUser_IdOrderByIdDesc(userId);
-        for (VehicleEntity vehicle : vehicles) {
-            minioStorageService.delete(vehicle.getImageUrl());
-        }
+        vehicleJpaRepository.findImageUrlsByUserId(userId).stream()
+                .filter(path -> path != null && !path.isBlank())
+                .forEach(minioStorageService::delete);
 
-        List<MaintenanceRecordEntity> records = maintenanceRecordJpaRepository
-                .findByVehicle_User_IdOrderByMaintenanceDateDesc(userId);
-        for (MaintenanceRecordEntity record : records) {
-            for (AttachmentEntity attachment : record.getAttachments()) {
-                minioStorageService.delete(attachment.getFilePath());
-            }
-        }
+        attachmentJpaRepository.findFilePathsByUserId(userId).stream()
+                .filter(path -> path != null && !path.isBlank())
+                .forEach(minioStorageService::delete);
 
         userJpaRepository.delete(user);
         log.info("User deleted from admin panel userId={}", userId);

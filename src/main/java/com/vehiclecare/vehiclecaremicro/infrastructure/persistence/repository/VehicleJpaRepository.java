@@ -1,6 +1,7 @@
 package com.vehiclecare.vehiclecaremicro.infrastructure.persistence.repository;
 
 import com.vehiclecare.vehiclecaremicro.infrastructure.persistence.entity.VehicleEntity;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -10,4 +11,11 @@ public interface VehicleJpaRepository extends JpaRepository<VehicleEntity, Strin
     List<VehicleEntity> findByUser_IdOrderByIdDesc(String userId);
     List<VehicleEntity> findAllByOrderByIdDesc();
     java.util.Optional<VehicleEntity> findByIdAndUser_Id(String id, String userId);
+
+    @Query("""
+            select v.imageUrl
+            from VehicleEntity v
+            where v.user.id = :userId
+            """)
+    List<String> findImageUrlsByUserId(String userId);
 }
