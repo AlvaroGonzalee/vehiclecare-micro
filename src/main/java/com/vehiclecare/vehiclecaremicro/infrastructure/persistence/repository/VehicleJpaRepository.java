@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface VehicleJpaRepository extends JpaRepository<VehicleEntity, String> {
     List<VehicleEntity> findByUser_Id(String userId);
+    List<VehicleEntity> findByUser_IdOrderByIdDesc(String userId);
+    List<VehicleEntity> findAllByOrderByIdDesc();
     java.util.Optional<VehicleEntity> findByIdAndUser_Id(String id, String userId);
 }

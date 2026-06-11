@@ -12,6 +12,12 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS admins (
+    id VARCHAR(8) PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS brands (
     id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -42,7 +48,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
     fuel_type VARCHAR(255),
     image_url VARCHAR(500),
     CONSTRAINT fk_vehicles_user
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_vehicles_user_id ON vehicles(user_id);
@@ -57,7 +63,7 @@ CREATE TABLE IF NOT EXISTS maintenance_records (
     price DECIMAL(38,2),
     description VARCHAR(255),
     CONSTRAINT fk_maintenance_records_vehicle
-        FOREIGN KEY (vehicle_id) REFERENCES vehicles(id)
+        FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_maintenance_records_vehicle_id ON maintenance_records(vehicle_id);
@@ -69,7 +75,7 @@ CREATE TABLE IF NOT EXISTS attachments (
     file_type VARCHAR(120) NOT NULL,
     file_path VARCHAR(255) NOT NULL,
     CONSTRAINT fk_attachments_maintenance_record
-        FOREIGN KEY (maintenance_record_id) REFERENCES maintenance_records(id)
+        FOREIGN KEY (maintenance_record_id) REFERENCES maintenance_records(id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_attachments_maintenance_record_id ON attachments(maintenance_record_id);

@@ -65,7 +65,7 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
         }
 
         try {
-            JwtService.JwtClaims claims = jwtService.validateToken(token);
+            JwtService.JwtClaims claims = jwtService.validateUserToken(token);
             boolean userExists = userRepositoryPort.findById(claims.userId()).isPresent();
             if (!userExists) {
                 throw new JwtAuthenticationException("El usuario del token ya no existe");

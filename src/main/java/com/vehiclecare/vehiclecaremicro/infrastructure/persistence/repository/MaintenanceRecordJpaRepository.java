@@ -17,4 +17,13 @@ public interface MaintenanceRecordJpaRepository extends JpaRepository<Maintenanc
 
     @EntityGraph(attributePaths = "attachments")
     Optional<MaintenanceRecordEntity> findByIdAndVehicle_User_Id(String id, String userId);
+
+    @EntityGraph(attributePaths = {"attachments", "vehicle", "vehicle.user"})
+    List<MaintenanceRecordEntity> findAllByOrderByMaintenanceDateDesc();
+
+    @EntityGraph(attributePaths = {"attachments", "vehicle", "vehicle.user"})
+    List<MaintenanceRecordEntity> findByVehicle_User_IdOrderByMaintenanceDateDesc(String userId);
+
+    @EntityGraph(attributePaths = {"attachments", "vehicle", "vehicle.user"})
+    Optional<MaintenanceRecordEntity> findDetailedById(String id);
 }

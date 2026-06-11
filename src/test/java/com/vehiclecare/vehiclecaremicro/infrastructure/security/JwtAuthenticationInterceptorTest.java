@@ -83,7 +83,7 @@ class JwtAuthenticationInterceptorTest {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/vehicles");
         request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer token");
         MockHttpServletResponse response = new MockHttpServletResponse();
-        when(jwtService.validateToken("token")).thenThrow(new JwtAuthenticationException("Token JWT inválido"));
+        when(jwtService.validateUserToken("token")).thenThrow(new JwtAuthenticationException("Token JWT inválido"));
 
         boolean result = interceptor.preHandle(request, response, new Object());
 
@@ -96,7 +96,7 @@ class JwtAuthenticationInterceptorTest {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/vehicles");
         request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer token");
         MockHttpServletResponse response = new MockHttpServletResponse();
-        when(jwtService.validateToken("token")).thenReturn(new JwtService.JwtClaims("user-1", "a@a.com", 999999L));
+        when(jwtService.validateUserToken("token")).thenReturn(new JwtService.JwtClaims("user-1", "a@a.com", 999999L));
         when(userRepositoryPort.findById("user-1")).thenReturn(Optional.empty());
 
         boolean result = interceptor.preHandle(request, response, new Object());
@@ -110,7 +110,7 @@ class JwtAuthenticationInterceptorTest {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/vehicles");
         request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer token");
         MockHttpServletResponse response = new MockHttpServletResponse();
-        when(jwtService.validateToken("token")).thenReturn(new JwtService.JwtClaims("user-1", "a@a.com", 999999L));
+        when(jwtService.validateUserToken("token")).thenReturn(new JwtService.JwtClaims("user-1", "a@a.com", 999999L));
         when(userRepositoryPort.findById("user-1")).thenReturn(Optional.of(new User()));
 
         boolean result = interceptor.preHandle(request, response, new Object());

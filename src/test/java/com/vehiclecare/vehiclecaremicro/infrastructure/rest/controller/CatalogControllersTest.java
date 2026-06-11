@@ -1,15 +1,18 @@
 package com.vehiclecare.vehiclecaremicro.infrastructure.rest.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.vehiclecare.vehiclecaremicro.application.dto.response.AdminCatalogSyncResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.BrandResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.ModelResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.dto.response.PageResponseDTO;
 import com.vehiclecare.vehiclecaremicro.application.service.CatalogQueryService;
 import com.vehiclecare.vehiclecaremicro.application.service.CatalogSyncService;
 import java.util.List;
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -54,10 +57,24 @@ class CatalogControllersTest {
     }
 
     @Test
-    void syncCatalog_returnsAccepted() {
+    void syncCatalog_returnsDisabledResponseWhenConfigDisabled() {
         var response = adminCatalogController.syncCatalog();
 
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        AdminCatalogSyncResponseDTO body = response.getBody();
+        assertFalse(body.isExecuted());
+    }
+
+    @Test
+    void syncCatalog_executesWhenConfigEnabled() throws Exception {
+        Field field = AdminCatalogController.class.getDeclaredField("catalogSyncEnabled");
+        field.setAccessible(true);
+        field.set(adminCatalogController, true);
+
+        var response = adminCatalogController.syncCatalog();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(true, response.getBody().isExecuted());
         verify(catalogSyncService).syncCatalog();
     }
 }

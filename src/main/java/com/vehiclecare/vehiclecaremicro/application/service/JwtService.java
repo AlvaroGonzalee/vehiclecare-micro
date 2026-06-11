@@ -27,6 +27,8 @@ import org.springframework.stereotype.Service;
 public class JwtService {
 
     private static final String HMAC_SHA256 = "HmacSHA256";
+    private static final String USER_TOKEN_TYPE = "USER";
+    private static final String ADMIN_TOKEN_TYPE = "ADMIN";
     private static final Base64.Encoder URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() { };
@@ -53,6 +55,14 @@ public class JwtService {
      * @return compact JWT string
      */
     public String generateToken(String userId, String email) {
+        return generateToken(userId, email, USER_TOKEN_TYPE);
+    }
+
+    public String generateAdminToken(String adminId, String email) {
+        return generateToken(adminId, email, ADMIN_TOKEN_TYPE);
+    }
+
+    private String generateToken(String userId, String email, String type) {
         log.debug("Generating JWT token userId={} email={}", userId, email);
         Instant now = Instant.now();
         Map<String, Object> header = Map.of(
@@ -63,6 +73,7 @@ public class JwtService {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("sub", userId);
         payload.put("email", email);
+        payload.put("type", type);
         payload.put("iat", now.getEpochSecond());
         payload.put("exp", now.plusSeconds(expirationSeconds).getEpochSecond());
 
@@ -80,6 +91,26 @@ public class JwtService {
      * @throws JwtAuthenticationException if the token is malformed, invalid or expired
      */
     public JwtClaims validateToken(String token) {
+        return validateUserToken(token);
+    }
+
+    public JwtClaims validateUserToken(String token) {
+        JwtClaims claims = validateClaims(token);
+        if (!claims.isUserToken()) {
+            throw new JwtAuthenticationException("El token no pertenece a un usuario");
+        }
+        return claims;
+    }
+
+    public JwtClaims validateAdminToken(String token) {
+        JwtClaims claims = validateClaims(token);
+        if (!claims.isAdminToken()) {
+            throw new JwtAuthenticationException("El token no pertenece a un administrador");
+        }
+        return claims;
+    }
+
+    private JwtClaims validateClaims(String token) {
         log.debug("Validating JWT token");
         String[] parts = token.split("\\.");
         if (parts.length != 3) {
@@ -95,13 +126,16 @@ public class JwtService {
         Map<String, Object> payload = decodeJson(parts[1]);
         String subject = stringClaim(payload, "sub");
         String email = stringClaim(payload, "email");
+        String type = optionalStringClaim(payload, "type");
         long expiration = longClaim(payload, "exp");
         if (Instant.now().getEpochSecond() >= expiration) {
             throw new JwtAuthenticationException("Token JWT expirado");
         }
 
-        log.debug("JWT token validated userId={} email={} expiresAt={}", subject, email, expiration);
-        return new JwtClaims(subject, email, expiration);
+        String normalizedType = type == null || type.isBlank() ? USER_TOKEN_TYPE : type;
+        log.debug("JWT token validated principalId={} email={} type={} expiresAt={}",
+                subject, email, normalizedType, expiration);
+        return new JwtClaims(subject, email, expiration, normalizedType);
     }
 
     private String encodeJson(Map<String, Object> value) {
@@ -139,6 +173,11 @@ public class JwtService {
         return value.toString();
     }
 
+    private String optionalStringClaim(Map<String, Object> payload, String key) {
+        Object value = payload.get(key);
+        return value == null ? null : value.toString();
+    }
+
     private long longClaim(Map<String, Object> payload, String key) {
         Object value = payload.get(key);
         if (value instanceof Number number) {
@@ -161,6 +200,17 @@ public class JwtService {
      * @param email authenticated user email
      * @param expiresAt expiration instant as epoch seconds
      */
-    public record JwtClaims(String userId, String email, long expiresAt) {
+    public record JwtClaims(String userId, String email, long expiresAt, String type) {
+        public JwtClaims(String userId, String email, long expiresAt) {
+            this(userId, email, expiresAt, USER_TOKEN_TYPE);
+        }
+
+        public boolean isUserToken() {
+            return USER_TOKEN_TYPE.equalsIgnoreCase(type);
+        }
+
+        public boolean isAdminToken() {
+            return ADMIN_TOKEN_TYPE.equalsIgnoreCase(type);
+        }
     }
 }
